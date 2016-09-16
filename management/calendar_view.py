@@ -2,10 +2,13 @@ from django.shortcuts import HttpResponse, render
 from django.db import connection
 import datetime
 import json
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def CalendarHome(request):
     return render(request, 'calendar.html', {})
 
+@login_required
 def UpdateEntryData(request):
     # grab their username
     user = request.user.username
@@ -45,6 +48,7 @@ def UpdateEntryData(request):
 
     return HttpResponse("200")
 
+@login_required
 def CopyEntry(request):
     # grab their username
     user = request.user.username

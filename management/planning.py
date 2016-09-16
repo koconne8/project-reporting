@@ -3,7 +3,9 @@ from django.db import connection
 import datetime
 import json
 from time_tools import DateWorkingHours, ManagerDateWorkingHours
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def Home(request):
     context = {}
     if not request.user.is_staff:
@@ -84,6 +86,7 @@ def Home(request):
 
     return render(request, 'planning.html', context)
 
+@login_required
 def GetAllDevAssignments(request):
     cur = connection.cursor()
 
@@ -136,6 +139,7 @@ def GetAllDevAssignments(request):
 
     return HttpResponse(json.dumps(context))
 
+@login_required
 def GetAssignments(request):
     cur = connection.cursor()
 
@@ -199,6 +203,7 @@ def GetAssignments(request):
 
     return HttpResponse(json.dumps(context))
 
+@login_required
 def GetPlanningProjection(request):
     cur = connection.cursor()
 
@@ -248,6 +253,7 @@ def GetPlanningProjection(request):
     }
     return HttpResponse(json.dumps(context))
 
+@login_required
 def DeveloperAssignments(request):
     cur = connection.cursor()
 
@@ -289,6 +295,7 @@ def DeveloperAssignments(request):
 
     return HttpResponse(json.dumps(context))
 
+@login_required
 def Deactivate(request):
     cur = connection.cursor()
 
@@ -297,6 +304,7 @@ def Deactivate(request):
 
     return HttpResponse('200')
 
+@login_required
 def Activate(request):
     cur = connection.cursor()
 
@@ -310,6 +318,7 @@ def Activate(request):
 
     return HttpResponse('200')
 
+@login_required
 def UpdateSupervisor(request):
     cur = connection.cursor()
 
@@ -332,6 +341,7 @@ def UpdateSupervisor(request):
 
     return HttpResponse('200')
 
+@login_required
 def RemoveAssignment(request):
     cur = connection.cursor()
 
@@ -340,6 +350,7 @@ def RemoveAssignment(request):
 
     return HttpResponse('200')
 
+@login_required
 def AddAssignment(request):
     cur = connection.cursor()
 

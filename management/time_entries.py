@@ -4,11 +4,14 @@ import datetime
 from holidays import GetHolidays
 import calendar
 import json
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def EntriesHome(request):
     return render(request, 'time_entries.html', {})
 
 
+@login_required
 def GetDateRange(request):
     cur = connection.cursor()
 
@@ -38,6 +41,7 @@ def GetDateRange(request):
     context = {'months': month_list, 'years': year_list}
     return HttpResponse(json.dumps(context))
 
+@login_required
 def GetProjectActivities(request):
     project = request.GET['project']
 
@@ -69,6 +73,7 @@ def GetProjectActivities(request):
 
     return HttpResponse(json.dumps(activity_list))
 
+@login_required
 def UpdateEntries(request):
     # grab our list of entries to update
     entries = json.loads(request.GET['entries'])
@@ -169,6 +174,7 @@ def UpdateEntries(request):
 
     return HttpResponse("200")
 
+@login_required
 def DeleteEntry(request):
     # grab our list of entries to update
     entry = json.loads(request.GET['entry'])

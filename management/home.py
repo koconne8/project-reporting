@@ -4,11 +4,14 @@ import datetime
 from holidays import GetHolidays
 import calendar
 import json
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def Home(request):
     return render(request, 'home.html', {})
 
 
+@login_required
 def GetEntries(request):
     """
         Generates the landing page for anyone to come to for them to change/modify
@@ -242,6 +245,7 @@ def GetEntries(request):
 
     return HttpResponse(json.dumps(context))
 
+@login_required
 def GetDistribution(request):
     # get their username
     user = request.user.username

@@ -5,7 +5,9 @@ from openpyxl import Workbook
 from holidays import GetHolidays
 from openpyxl.styles import Color, Font, PatternFill
 from openpyxl.styles import colors
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def WeeklyReportFromUrl(request):
     response = HttpResponse(content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="WeeklyReport.xls"'

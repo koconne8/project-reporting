@@ -3,10 +3,13 @@ from django.db import connection
 import datetime
 import json
 
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def DistibutionHome(request):
     return render(request, 'distribution.html', {})
 
+@login_required
 def GetEntities(request):
     # first check to make sure we have all we need
     # do we have a date range?
