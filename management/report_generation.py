@@ -936,3 +936,58 @@ def GenerateExternalReport(request):
             writer.writerow(new_record)
 
     return response
+
+def MissingHours(request):
+    # connect to our database
+    cur = connection.cursor()
+
+    # gather a list of all projects
+    cur.execute(
+        "SELECT projects.id, projects.name FROM projects WHERE projects.id IN (SELECT customized_id FROM custom_values WHERE customized_type='Project' AND custom_field_id = 11 AND value = '1')ORDER BY projects.name;")
+    dbprojects = cur.fetchall()
+
+    # total list of projects
+    projects = []
+
+    # run through all projects, adding them to the list (as RedmineProject objects)
+    for project in dbprojects:
+        # get the fopal for this project
+        cur.execute(
+            "SELECT value FROM custom_values WHERE customized_id = %(project)s AND customized_type='Project' AND custom_field_id = 4" % {
+                'project': project[0]})
+        fopal = cur.fetchone()[0]
+
+        # get the financially responsible PI (if any)
+        cur.execute(
+            'SELECT value FROM custom_values WHERE custom_field_id = 10 AND customized_id = %(project)s AND customized_type = \'Project\';' % {
+                'project': project[0]})
+        fpi = cur.fetchall()
+        if len(fpi) >= 1:
+            try:
+                fpi = fpi[0][0]
+                sfpi = fpi.split(' ')
+                fpi = sfpi[1] + ', ' + sfpi[0]
+            except:
+                fpi = ''
+        else:
+            fpi = ''
+
+        new_proj = RedmineProject(id=project[0], name=project[1], fopal=fopal, pi_name=fpi)
+        projects.append(new_proj)
+
+        # for each of these, grab any child projects
+        projects += GetChildren(project[0])
+
+    # prepare list for filtering
+    required_list = '('
+    for project_one in projects:
+        id = project_one.id
+        required_list += str(id) + ','
+    required_list = required_list[:-1] + ')'
+
+    cur.execute(
+        'SELECT SUM(hours) FROM time_entries INNER JOIN users ON time_entries.user_id = users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND time_entries.project_id NOT IN %(list)s AND tmonth = %(month)s AND tyear = %(year)s;' % {
+            'month': request.GET['month'], 'year': request.GET['year'], 'list': required_list})
+    missing_hours = cur.fetchone()[0]
+
+    return HttpResponse(missing_hours)

@@ -23,7 +23,7 @@ from management.home import Home, GetEntries, GetDistribution
 from management.time_entries import EntriesHome, GetDateRange, GetProjectActivities, UpdateEntries, DeleteEntry
 from management.calendar_view import CalendarHome, UpdateEntryData, CopyEntry
 from management.distribution import DistibutionHome, GetEntities
-from management.report_generation import ReportGeneratorHome, GenerateExternalReport, GenerateInternalReport, GenerateCSRReport
+from management.report_generation import ReportGeneratorHome, GenerateExternalReport, GenerateInternalReport, GenerateCSRReport, MissingHours
 from management.reports import WeeklyReportFromUrl
 
 urlpatterns = [
@@ -60,6 +60,8 @@ urlpatterns = [
     url(r'^generate_internal_report/$', GenerateInternalReport, name="report"),
     url(r'^generate_external_report/$', GenerateExternalReport, name="report_external"),
     url(r'^generate_csr_report/$', GenerateCSRReport, name="report_external"),
+    url(r'^missing_hours/$', MissingHours, name="unassigned_hours"),
+
 
 
     #------------- MANAGERS ONLY ----------------#

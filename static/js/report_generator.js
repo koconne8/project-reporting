@@ -74,7 +74,7 @@ function init()
 	$('#month').change(function(){
 		// grab an updated missing hour count
 		$.ajax({
-			url: '/reports/missing_hours',
+			url: '../missing_hours',
 			data: {month: $('#month').val(), year: $('#year').val()},
 			dataType: "text",
 			success: function(missing_hours){
@@ -89,7 +89,7 @@ function init()
 	$('#year').change(function(){
 		// grab an updated missing hour count
 		$.ajax({
-			url: '/reports/missing_hours',
+			url: '../missing_hours',
 			data: {month: $('#month').val(), year: $('#year').val()},
 			dataType: "text",
 			success: function(missing_hours){
