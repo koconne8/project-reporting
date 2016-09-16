@@ -1,0 +1,717 @@
+{% extends "base.html" %}
+
+{% block title %}Hourly Visualization{% endblock %}
+
+{% block css %}
+    <link href='/static/css/visualize.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/vis/3.11.0/vis.min.css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-datepicker3.min.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/planning.css" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="margin-left: 20px;">
+    <div class="col-lg-6">
+        <div class="panel panel-primary">
+        {% if not user.is_staff %}
+            Only managers can use this page.
+        {% else %}
+        <div class="panel-heading">Projects <!--<button type="button" data-toggle="modal" data-target="#prospective_project_modal" class="btn btn-sm btn-success" style="margin-left: 20px; float: right;" title="Add Prospective Project"><i class="fa fa-plus"></i></button>!--><em style="float: right;">Require: {{ total_required_for_today }} FTE</em></div>
+        <div class="panel-body">
+            <div id='chart'></div>
+
+        <!------------- Prospective Project Modal ----------------------->
+{#        <div id="prospective_project_modal" class="modal fade" role="dialog">#}
+{#            <div class="modal-dialog">#}
+{#                <div class="modal-content">#}
+{#                    <div class="modal-header">#}
+{#                        <h4 class="modal-title">New Prospective Project</h4>#}
+{#                    </div>#}
+{#                    <div class="modal-body">#}
+{#                        <div class="row">#}
+{#                        <div class="col-lg-12">#}
+{#                            <input type="text" placeholder="Project Name" class="form-control" id="prospective_name" />#}
+{#                            <br />#}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-6">#}
+{#                                    <input type="text" id="prospective_start_date" class="form-control" placeholder="Start Date" />#}
+{#                                </div>#}
+{#                                <div class="col-lg-6">#}
+{#                                    <input type="text" id="prospective_end_date" class="form-control" placeholder="End Date" />#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <br />#}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-6">#}
+{#                                    <input type="text" id="prospective_budget" class="form-control" placeholder="$ Budget" />#}
+{#                                </div>#}
+{#                                <div class="col-lg-6">#}
+{#                                    <input type="text" id="prospective_fte" class="form-control" placeholder="Required FTEs" />#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                            <button type="button" data-dismiss="modal" class="btn btn-success" id="prospective_save" style="float: right; margin-right: 15px; margin-top: 10px;"><i class="fa fa-save"></i> Save</button>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+
+    </div>
+        </div>
+    </div>
+    <div class="col-lg-6" style="display: none;" id="active_project">
+		<div class="col-lg-12">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+				Assignments <span style="float: right; margin-right: 20px;" id="project_fte"></span>
+				</div>
+				<div class="panel-body">
+					<table class="table table-hover">
+						<thead id='assignee_header' style="display: none;">
+							<tr>
+								<td>Name</td>
+								<td>Effort</td>
+								<td>Starting</td>
+								<td>Ending</td>
+                                <td>Remove</td>
+							</tr>
+						</thead>
+						<tbody id='assignee_table'>
+							<tr id="fte_row_template" style="display: none;"><td rel="name">Name</td><td rel="effort">1.0</td><td rel="start"></td><td rel="end"></td><td rel="del"><button type="button" class="btn btn-danger"><i class="fa fa-remove"></i></button></td></tr>
+						</tbody>
+						<span id="no_assignees" style="display: none;">No one is assigned to this project!</span>
+					</table>
+					<hr />
+					<div class="row">
+						<div class="col-lg-12">
+							Add Developer:<br />
+							<div class="row">
+								<div class="col-lg-4">
+									<select class="form-control" id="dev_list"></select>
+								</div>
+								<div class="col-lg-2">
+									<input type="text" id="fte_effort" placeholder="Effort (1.0)" class="form-control"/>
+								</div>
+								<div class="col-lg-2">
+									<input type="text" id="fte_start" placeholder="Starting Date" class="form-control"/>
+								</div>
+								<div class="col-lg-2">
+									<input type="text" id="fte_end" placeholder="Ending Date" class="form-control"/>
+								</div>
+								<div class="col-lg-2">
+									<button type="button" class="btn btn-success" id="add_dev"><i class="fa fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-12">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+				Project Information and Projections <!--<button type="button" id="activate_project" class="btn btn-sm btn-success" style="float: right; position: relative; top: -5px;"><i class="fa fa-check"></i> Activate</button>--><span style="float: right; margin-right: 20px;" id="project_budget"></span>
+				</div>
+				<div class="panel-body">
+					<table class="table table-hover">
+						<tbody>
+							<tr>
+								<td>Start Date</td><td id="project_start_date" style="font-align: right;"></td>
+							</tr>
+							<tr>
+								<td>Target End Date</td><td id="project_end_date" style="font-align: right;"></td>
+							</tr>
+							<tr>
+								<td>Estimated Cost At Project End</td><td id="cost_at_target_end" style="font-align: right;"></td>
+							</tr>
+{#							<tr>#}
+{#								<td>Suggestions</td><td id="project_suggestions" style="font-align: right;"></td>#}
+{#							</tr>#}
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+    </div>
+
+
+    <br />
+            <hr/>
+            <br />
+
+            <div class="row" style="margin-left: 20px; margin-right: 20px;">
+            <div class="col-lg-3">
+                <div class="panel panel-default panel-info">
+                <div class="panel-heading">
+                <!-- <ul class="nav nav-tabs nav-justitifed" data-tabs="tabs" id="programmer_list">
+                    <li id="developer_link_template" style="display: none;"><a href="#developer_info_template" data-toggle="tab">Developer 1</a></li>
+                </ul> -->
+                    Developers
+                </div>
+                <div class="panel-body">
+                    <div class="list-group" id="active_dev_list">
+
+
+
+                    </div>
+                <!-- <div id="developer_info" class="tab-content">
+                    <div class="tab-pane" id="developer_info_template">
+                        <br />
+                        <div id="developer_chart"></div>
+                        <br />
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="col-sm-2" style="padding-top: 5px;">Supervisor:</div>
+                                <div class="col-sm-4"><select id="supervisors" rel="supervisor_list" class="form-control">
+                                    <option value="None">No Manager Assigned</option>
+                                </select></div>
+                                <div class="col-sm-3" style=" position: relative; top: 3px;"><input type="checkbox" rel="supervisor_status" id="programmer_is_manager" style="margin-right: 10px; position: relative; top: 2px;"><label rel="is_manager_label" for="programmer_is_manager">Is Manager</label></div>
+                                <div class="col-sm-1" style="padding-top: 3px;"><button type="button" rel="save_supervisor" class="btn btn-success"><i class="fa fa-save"></i></button></div>
+                                <div class="col-sm-2"></div>
+                            </div>
+                            <button type="button" class="btn btn-danger" style="float: right; margin-right: 15px;" rel="deactivate">Deactivate</button>
+                        </div>
+                    </div>
+                </div> -->
+                </div>
+        </div>
+    </div>
+            <div class="col-lg-9" id="dev_details" style="display: none;">
+
+                <div class="row">
+
+                    <div class="panel panel-default panel-success">
+                        <div class="panel-heading">
+                        <!-- <ul class="nav nav-tabs nav-justitifed" data-tabs="tabs" id="programmer_list">
+                            <li id="developer_link_template" style="display: none;"><a href="#developer_info_template" data-toggle="tab">Developer 1</a></li>
+                        </ul> -->
+                            Developer Project Schedule
+                        </div>
+                        <div class="panel-body">
+                            <div id="dev_timeline"></div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="panel panel-default panel-success">
+                        <div class="panel-heading">
+                        <!-- <ul class="nav nav-tabs nav-justitifed" data-tabs="tabs" id="programmer_list">
+                            <li id="developer_link_template" style="display: none;"><a href="#developer_info_template" data-toggle="tab">Developer 1</a></li>
+                        </ul> -->
+                            Developer Information
+                        </div>
+                        <div class="panel-body">
+                            <div id="dev_info">
+
+                                <div class="col-lg-1" style="text-align: right; padding-top: 5px;">Supervisor:</div>
+                                <div class="col-lg-3">
+                                    <select rel="supervisor_list" id="supervisors" class="form-control"></select>
+                                </div>
+                                <div class="col-lg-1" style="padding-top: 2px;">
+                                    <button type="button" id="save_supervisor_button" class="btn btn-success" data-id=""><i class="fa fa-save"></i></button>
+                                </div>
+                                <div class="col-lg-7">
+                                    <button type="button" id="deactivate_button" class="btn btn-danger" style="float: right;" data-id="">Deactivate</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+
+        <div class="row">
+        <div class="col-lg-4">
+            <div class="col-sm-3" style="padding-top: 5px;">Activate Developer:</div><div class="col-sm-8"><select id="inactive_devs" class="form-control"></select></div>
+            <div class="col-sm-1"><button type="button" class="btn btn-success" id="activate_developer">Activate</button></div>
+        </div>
+    </div>
+	{% endif %}
+{% endblock %}
+
+{% block js_body %}
+{#	<script language="javascript" src='/media/js/jquery-1.8.2.min.js'></script>#}
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+        <script language="javascript" src='/static/js/vis.js'></script>
+	<script language="javascript" src='/static/js/bootstrap-datepicker.min.js'></script>
+	{% if user.is_staff %}
+	<script language="javascript">
+		var selected_project = null;
+        var timeline = null;
+        var dev_timeline = null;
+		var project_list = [];
+        var groups = new vis.DataSet();
+        var dev_assignments = new vis.DataSet();
+
+        $('#deactivate_button').click(function(){
+           if($(this).attr('data-id') == ''){
+               alert("Developer not selected");
+               return;
+           }
+
+                var dev_id = $(this).attr('data-id');
+            $.ajax({
+               url: '../deactivate_developer',
+                data: {id: dev_id},
+                success: function(){
+                    $('[class="list-group-item"]').each(function(){
+                       if($(this).attr('data-id') == dev_id){
+                           $(this).remove();
+                           alert("Developer removed");
+                           $('#dev_details').hide();
+                       }
+                    });
+                },
+                error: function(){
+                    alert("Error!  Could not deactivate developer.");
+                }
+            });
+        });
+
+        $('#save_supervisor_button').click(function(){
+            if($(this).attr('data-id') == ''){
+               alert("Developer not selected");
+               return;
+           }
+
+            var dev_id = $(this).attr('data-id');
+            var man_id = $('#supervisors').val();
+
+            $.ajax({
+               url: '../update_supervisor',
+                data: {id: dev_id, man_id: man_id},
+                success: function(){
+                    alert("Supervisor updated!");
+
+                },
+                error: function(){
+                    alert("Failed to save supervisor update.");
+                }
+            });
+        });
+
+        // set start and end dates for last month and this month
+        var date = new Date();
+        var start = new Date();
+        start.setDate(1);
+        start.setMonth(date.getMonth()-1);
+        var end = new Date();
+        end.setDate(1);
+        end.setMonth(date.getMonth()+1);
+        end.setDate(end.getDate()-1);
+
+        var options = {
+            start: start,
+            end: end,
+            editable: {
+                add: false,
+                updateTime: true,
+                remove: false,
+                updateGroup: false
+            },
+{#            onMove: function(item, callback){#}
+{#                // what is the new start date?#}
+{#                //console.log(item);#}
+{##}
+{#                var start = item.start.toUTCString();#}
+{#                var end = item.end.toUTCString();#}
+{#                var id = item.id;#}
+{##}
+{#                $.ajax({#}
+{#                    url: '../update_project_times',#}
+{#                    data: {id: id, start: start, end: end},#}
+{#                    success: function(){#}
+{#                        UpdateProjectInfo(id);#}
+{#                        callback(item);#}
+{#                    },#}
+{#                    error: function(){#}
+{#                        alert("There was an error in moving the project.");#}
+{#                        callback(null);#}
+{#                    }#}
+{#                });#}
+{#            }#}
+        };
+
+        function UpdateProjectInfo(project_id){
+            var prospect = false;
+            var id = project_id;
+            if(project_id.indexOf('new_') == 0){
+                prospect = true;
+                id = project_id.split('_')[1];
+            }
+            $.ajax({
+					url: '../get_assignments',
+					data: { project: id, prospect: prospect },
+					dataType: 'json',
+					success: function(data){
+						$('[rel="assignee"]').each(function(){
+							$(this).remove();
+						});
+						if(data.assignees.length == 0){
+							$('#no_assignees').show();
+							$('#assignee_header').hide();
+						}
+						else{$('#no_assignees').hide();$('#assignee_header').show();}
+
+						// set the start/end dates as defaults
+						$('#fte_start').val(data.start_date);
+						$('#fte_end').val(data.end_date);
+						$('#project_start_date').html(data.start_date);
+						$('#project_end_date').html(data.end_date);
+
+						var total_fte = 0;
+						for(var i = 0; i < data.assignees.length; i++){
+							// copy the row
+							var row = document.getElementById('fte_row_template').cloneNode(true);
+							$(row).find('[rel="name"]').html(data.assignees[i][1] + ' ' + data.assignees[i][2]);
+							$(row).find('[rel="effort"]').html(data.assignees[i][3]);
+							$(row).find('[rel="start"]').html(data.assignees[i][4]);
+							$(row).find('[rel="end"]').html(data.assignees[i][5]);
+                            $(row).find('[rel="del"] button').attr('id', 'del_'+data.assignees[i][6]);
+                            $(row).find('[rel="del"] button').click(function(){
+                                var entry_id = this.id.split('_')[1];
+                                $.ajax({
+                                   url: '../remove_project_distribution_entry',
+                                    data: {entry_id: entry_id},
+                                    success: function(data){
+                                        if(data == 200) {
+                                            UpdateProjectInfo(selected_project);
+                                            UpdateDeveloperAssignments();
+                                        }
+                                    },
+                                    error: function(){
+
+                                        alert("Failed to remove person from project assignment.");
+                                    }
+                                });
+                            });
+							$(row).attr('id', 'project_assignee_'+data.assignees[i][0]);
+							$(row).attr('rel', 'assignee');
+							$('#assignee_table').append(row);
+							$(row).show();
+							total_fte += data.assignees[i][3];
+						}
+						$('#project_fte').html(total_fte + ' FTEs');
+
+						for(var i = 0; i < data.developers.length; i++){
+							var option = document.createElement("OPTION");
+							$(option).html(data.developers[i][0]);
+							$(option).val(data.developers[i][1]);
+							$('#dev_list').append(option);
+						}
+					},
+					error: function(){
+						alert("Failed to get project assignments.");
+					}
+				});
+                $.ajax({
+                   url: '../get_planning_projection',
+                    data: {'project': selected_project},
+                    dataType: 'json',
+                    success: function(data){
+                        $('#project_budget').html('$'+data.project_budget.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        $('#cost_at_target_end').html('$'+data.planned_spending.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        $('#active_project').show();
+
+                    },
+                    error: function(){
+                        alert("Failed to load projection data.");
+                    }
+                });
+        }
+
+        function UpdateDeveloperAssignments(){
+            $('#developer_assignment_status').show();
+            $.ajax({
+                url: '../get_all_dev_assignments',
+                dataType: 'json',
+                success: function(data){
+                    // remove any previous ones
+                    $('[rel="developer_link"]').each(function(){$(this).remove();});
+                    $('[rel="developer_panel"]').each(function(){$(this).remove();});
+
+                    // update the select box for activating devs
+                    $('#inactve_devs').html();
+                    for(var i = 0; i < data.inactive_devs.length; i++){
+                        $('#inactive_devs').append('<OPTION value="'+data.inactive_devs[i][1]+'">'+data.inactive_devs[i][0]+'</OPTION>');
+                    }
+
+                    // populate all supervisor lists
+                    $('[rel="supervisor_list"]').each(function(){
+                        for(var i = 0; i < data.supervisors.length; i++){
+                            $(this).append('<OPTION value="'+data.supervisors[i][1]+'">'+data.supervisors[i][0]+'</OPTION>');
+                        }
+                    });
+
+                    // make sure to clear the list first
+                    $('#active_dev_list').html('');
+
+                    for(var i = 0; i < data.active_devs.length; i++){
+                        var l = document.createElement('a');
+                        //l.href = '#';
+                        $(l).css('cursor', 'pointer');
+                        l.className = 'list-group-item';
+                        $(l).attr('data-id', data.active_devs[i].developer_id);
+                        $(l).html(data.active_devs[i].developer + '<em style="float: right;">'+data.active_devs[i].today_assignment+'%</em>');
+
+                        $(l).click(function(){
+                            var dev_id = $(this).attr('data-id');
+
+                            $.ajax({
+                               url: '../developer_assignments',
+                                data: {dev_id: dev_id},
+                                dataType: 'json',
+                                success: function(data){
+                                    // clear any old ones
+                                    $('#dev_timeline').html('');
+
+                                    var assignments = new vis.DataSet();
+                                    console.log(data.assignments);
+                                    for(var j = 0; j < data.assignments.length; j++){
+                                        assignments.add({
+                                           id: data.assignments[j].entry_id,
+                                            content: '<em style="font-size: 12px;">('+data.assignments[j].effort+'%)</em> '+data.assignments[j].project,
+                                            start: data.assignments[j].start,
+                                            end: data.assignments[j].end,
+                                            className: data.assignments[j].class
+                                        });
+                                    }
+                                    var timeline_obj = document.getElementById('dev_timeline');
+                                    var dev_timeline = new vis.Timeline(timeline_obj, assignments, {start: start, end: end});
+
+                                    document.getElementById('supervisors').value = data.manager_id;
+
+                                    console.log(data.developer_id);
+                                    $('#deactivate_button').attr('data-id', data.developer_id);
+                                    $('#save_supervisor_button').attr('data-id', data.developer_id);
+
+                                    $('#dev_details').show();
+                                },
+                                error: function(){
+                                    alert("Failed to get developer assignments!");
+                                }
+                            });
+                        });
+
+                        $('#active_dev_list').append(l);
+
+
+                    }
+
+                },
+                error: function(){
+                    alert("Failed to get general developer information.");
+                }
+            });
+        }
+
+		$(document).ready(function(){
+            UpdateDeveloperAssignments();
+
+            $('#activate_developer').click(function(){
+               // make sure someone is selected
+                if($('#inactive_devs').val() == ''){
+                    alert("Please select a developer to activate.");
+                    return;
+                }
+
+                $.ajax({
+                   url: '../activate_developer',
+                    data: {id: $('#inactive_devs').val()},
+                    success: function(){
+                        if(selected_project != undefined && selected_project != ''){
+                            UpdateProjectInfo(selected_project);
+                        }
+                        UpdateDeveloperAssignments();
+                    },
+                    error: function(){
+                        alert("Failed to activate new developer.");
+                    }
+                });
+            });
+
+            $('#activate_project').click(function(){
+                $.ajax({
+                    url: '../activate_project',
+                    data: {id: selected_project},
+                    success: function(data){
+                        $('#activate_project').hide();
+
+                        for(var i = 0; i < project_list.length; i++){
+                            if(project_list[i].id == selected_project)
+                            {
+                                project_list[i].id = data;
+                                project_list[i].className = '';
+                            }
+                        }
+                        selected_project = data;
+                        timeline.destroy();
+                        var items = new vis.DataSet(project_list);
+
+                        var container = document.getElementById('chart');
+
+                        timeline = new vis.Timeline(container, items, options);
+
+                        timeline.on('select', function(properties){
+                            project_id = properties.items[0];
+                            selected_project = project_id;
+                            if(selected_project == undefined){
+                                $('#project_details_row').hide();
+                                return;
+                            }
+                            $('#project_details_row').show();
+                            UpdateProjectInfo(project_id);
+                        });
+
+                    },
+                    error: function(){
+                        alert("There was an error activating the project!");
+                    }
+                }) ;
+            });
+
+			// setup the datepickers
+			$('#fte_start').datepicker({autoclose: true, format: "yyyy-mm-dd"});
+			$('#fte_end').datepicker({autoclose: true, format: "yyyy-mm-dd"});
+			$('#prospective_start_date').datepicker({autoclose: true, format: "yyyy-mm-dd"});
+			$('#prospective_end_date').datepicker({autoclose: true, format: "yyyy-mm-dd"});
+
+            $('#prospective_save').click(function(){
+
+                // send this off to the backend!
+                $.ajax({
+                    url: '../add_new_prospective_project',
+                    data: {name: $('#prospective_name').val(), start: $('#prospective_start_date').val(), end: $('#prospective_end_date').val(), budget: $('#prospective_budget').val(), fte: $('#prospective_fte').val()},
+                    success: function(data){
+                        // destroy the chart
+                        timeline.destroy();
+
+                        // add to chart
+                        var display = $('#prospective_name').val();
+                        if($('#prospective_fte').val() != '')
+                            display += ' - <em>'+ $('#prospective_fte').val()+' FTE</em>';
+                        var new_project = {
+                            id: 'new_'+data,
+                            content: display,
+                            start: $('#prospective_start_date').val(),
+                            end: $('#prospective_end_date').val(),
+                            className: 'prospective_project'
+                        };
+                        project_list.push(new_project);
+                        var items = new vis.DataSet(project_list);
+
+                        var container = document.getElementById('chart');
+
+                        timeline = new vis.Timeline(container, items, options);
+
+                        timeline.on('select', function(properties){
+                            project_id = properties.items[0];
+                            selected_project = project_id;
+                            if(selected_project == undefined){
+                                $('#project_details_row').hide();
+                                return;
+                            }
+                            $('#project_details_row').show();
+                            UpdateProjectInfo(project_id);
+                        });
+
+                        $('#prospective_name').val('');
+                        $('#prospective_start_date').val('');
+                        $('#prospective_end_date').val('');
+                        $('#prospective_budget').val('');
+                        $('#prospective_fte').val('');
+                    },
+                    error: function(){
+                        alert("There was a problem trying to save this data.");
+                    }
+                })
+            });
+
+
+			// create the data set
+			{% for project in projects %}
+                var display_name = '{{ project.name }}{% if project.required_effort %} - <em>{{ project.required_effort }} FTE</em>{% endif %}';
+				{% if project.start != '' %}project_list.push({
+					id: '{% if project.prospect %}new_{% endif %}{{ project.id }}',
+					content: display_name,
+					start: '{{ project.start }}',
+					end: '{{ project.end }}'{% if project.prospect %},
+                        className: 'prospective_project'{% endif %}
+				});{% endif %}
+			{% endfor %}
+
+			var items = new vis.DataSet(project_list);
+
+			var container = document.getElementById('chart');
+
+			timeline = new vis.Timeline(container, items, options);
+
+			timeline.on('select', function(properties){
+				project_id = properties.items[0];
+				selected_project = project_id;
+				if(selected_project == undefined){
+					$('#project_details_row').hide();
+                    return;
+                }
+                $('#project_details_row').show();
+				UpdateProjectInfo(project_id);
+			});
+
+
+			$('#add_dev').click(function(){
+				// make sure we have a selected project
+				if(selected_project == undefined){
+					alert("Please select a project first!");
+					return;
+				}
+
+				// check developer value
+				if($('#dev_list').val() == null){
+					alert("Please select a developer first!");
+					return;
+				}
+
+				// check effort
+				if($('#fte_effort').val() == ''){
+
+					alert("Please enter an effort amount.");
+					return;
+				}
+
+				// check the start date
+				if($('#fte_start').val() == ''){
+					alert("Please enter a starting date.");
+					return;
+				}
+
+				// check the end date
+                if($('#fte_end').val() == ''){
+                        alert("Please enter an ending date.");
+                        return;
+                }
+
+				// send away!
+				$.ajax({
+					url: '../add_developer',
+					data: {project: selected_project, developer: $('#dev_list').val(), effort: $('#fte_effort').val(), start: $('#fte_start').val(), end: $('#fte_end').val()},
+					success: function(data){
+					        UpdateProjectInfo(selected_project);
+                            UpdateDeveloperAssignments();
+					},
+					error: function(){
+						alert("There was an error trying to add this developer to the selected project.");
+					}
+				});
+
+			});
+		});
+	</script>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>Report Generation for Redmine Managers</title>
+    <link href='/static/css/main.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+  </head>
+
+  <body>
+	<section class="header">
+	Please select which projects you would like to include in the report:
+	</section>
+
+	<section class="project_list">
+	{% for project in projects %}
+		<input type="checkbox" id="{{ project.id }}" name="project_choice" parent_id="{{ project.parent }}" /><label for="{{ project.id }}" id="label_{{ project.id }}">{{ project.name }}</label>
+	{% if project.fopal %}
+		<img src="/static/img/fopal.png" class="fopal" title="FOPAL: {{ project.fopal }}" />
+	{% endif %}
+	{% if project.error %}
+		<img src="/static/img/error.png" class="error" title="{{ project.error }}" />
+	{% endif %}
+
+	<br />
+	{% endfor %}
+	</section>
+
+	<section class="missing_list">
+		Unassigned Hours ({{ missing_hours }}): <br />
+		{% for project in missing_list %}
+			<input class="unassigned" type="checkbox" id="{{ project.id }}" name="project_choice"/><label for="{{ project.id }}" id="label_{{ project_id }}"><strong>{{ project.name }}</strong>: {{ project.hours }} hours</label><br />
+		{% endfor %}
+	</section>
+
+	<span class="check_all"><input type="checkbox" id="check_all_box"/><label for="check_all_box"> All Projects</label></span>
+
+	<section class="date_selection">
+		Select Month/Year:
+		<SELECT id="month" class="date_select">
+		  {% for month in months %}
+		    <OPTION value="{{ month.number }}">{{ month.name }}</OPTION>
+		  {% endfor %}
+		</SELECT>
+
+		<SELECT id="year" class="date_select">
+		  {% for year in years %}
+		    <OPTION value="{{ year.year }}">{{ year.year }}</OPTION>
+		  {% endfor %}
+		</SELECT>
+	</section>
+
+	<section class='generate'>
+		<button type="button" class="generate_button" id="internal_button">Generate Internal CRC Report</button><button type="button" class="generate_button" id="external_button">Generate External CRC Report</button><br />
+        <br /><button type="button" class="generate_button" id="csr_button">Generate CSR Report</button><br /><br />
+	</section>
+
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+	<script language="javascript" src='/static/js/report_generator.js'></script>
+	<script language="javascript">
+		init();
+	</script>
+  </body>
+</html>

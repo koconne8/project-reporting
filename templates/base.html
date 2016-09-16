@@ -1,0 +1,74 @@
+<html>
+<head>
+	{% block hidden_comments %}
+
+	{% endblock %}
+	<!-- <link rel="stylesheet" type="text/css" href="/reports/media/css/basic.css"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+	{% block css %}
+
+	{% endblock %}
+	<title>{% block title %}{% endblock %}</title>
+	{% block js_header %}
+	{% endblock %}
+</head>
+<body>
+<nav id="nav_bar" class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="../home">Redmine Time Entries</a>
+        <ul class="nav navbar-nav">
+            <li><a href="../home/">Home</a></li>
+            <li><a href="../time_entries/">Entries</a></li>
+            <li><a href="../calendar/">Calendar</a></li>
+            <li><a href="../distribution/">Time Distribution</a></li>
+	    {% if user.is_staff %}
+            <li><a href="../tracker/">Project Tracker</a></li>
+            <li><a href="../hourly/">Hourly Report Generator</a></li>
+        {% endif %}
+        </ul>
+    </div>
+</nav>
+
+
+
+<section class="contents">
+{% block content %}
+
+{% endblock %}
+
+
+
+</section>
+<script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+{% block js_body %}
+{% endblock %}
+
+
+<script>
+	$('#home_link').click(function(){
+			window.location.href = '../home/';
+	});
+	$('#time_entry_link').click(function(){
+			window.location.href = '../time_entries/';
+		});
+	$('#calendar_link').click(function(){
+			window.location.href = '../calendar/';
+		});
+	$('#vis_link').click(function(){
+			window.location.href = '../distribution/';
+		});
+	$('#org_link').click(function(){
+			window.location.href = '../org_chart/';
+		});
+
+	{% if role == "manager" %}
+	$('#manage_link').click(function(){
+			window.location.href = '../manage_programmers/';
+		});
+	{% endif %}
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+.budget_progress{
+	width: 30%;
+	height: 20px;
+	border: 1px solid black;
+	display: inline-block;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.budget_holder{
+	text-align: center;
+	display: none;
+	border: 0px solid transparent;
+}
+
+.budget_holder span{
+	position: relative;
+	top: -5px;
+}
+
+.no_budget{
+	text-align: center;
+	display: none;
+}
+

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Redmine Time-tracking Entries{% endblock %}
+
+{% block css %}
+    <link href='/static/css/manage.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+<section class="date_selection">
+    <div class="row">
+        <div class="span10" style="padding-left: 20px;">
+            {% if request.user.is_staff %}
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="username" val="">User</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="user_dropdown" style="max-height: 400px; overflow-y: auto;">
+
+                </ul>
+            </div>
+            {%  endif %}
+
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="month_name" val="">Month</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="month_dropdown">
+
+                </ul>
+            </div>
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="year_name" val="">Year</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="year_dropdown">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+        <!-- <img src="/reports/media/img/list.png" title="Switch to List View" id="list_link" class="list_link"/>
+		<img src="/reports/media/img/piechart.png" title="Time Distribution" id="distribution_link" class="distribution_link" />	-->
+	</section>
+
+    <ul class="nav nav-list">
+        <li class="divider"></li>
+    </ul>
+
+	<section class="overview" style="padding-left: 20px; padding-right: 20px;">
+        <div class="well" style="text-align: center;">
+            <table class="table summary">
+                <tbody>
+                    <tr>
+                        <td>Billable Hours</td><td><span id="billable_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Non-billable Hours</td><td><span id="support_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total Hours</td><td><span id="total_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Expected Billable</td><td><span id="expected"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% if request.user.is_staff %}
+            <div id="managers_link" class="ml"></div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section style="padding-left: 20px; padding-right: 20px;">
+        <div class="well entry_well">
+            <table class="table table-striped" id="time_entry_table">
+                <thead>
+                    <tr>
+                        <th class="project_header">Project</th>
+                        <th class="date_header">Date</th>
+                        <th class="hours_header">Hours</th>
+                        <th>Comments</th>
+                        <th>Issue #</th>
+                        <th class="activity_header">Activity</th>
+                        <th>Log As</th>
+                        <th>Delete Entry</th>
+                    </tr>
+                </thead>
+                <tbody id="entry_list">
+
+                </tbody>
+            </table>
+        </div>
+	</section>
+
+	<section class="save_section">
+		<button type="button" class="save_button" id="save_button">Save</button>
+		<button type="button" class="add_button" id="add_button">Add Entry</button>
+	</section>
+{% endblock %}
+
+{% block js_body %}
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+	<script language="javascript" src='/static/js/manage.js'></script>
+	<script language="javascript">
+		init();
+
+		// highlight the tab we're on
+		$('#time_entry_link').toggleClass('selected_nav');
+	</script>
+{% endblock %}

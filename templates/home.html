@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Redmine Time-tracking Home{% endblock %}
+
+{% block css %}
+    <link href='/static/css/home.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="equal_height">
+            <div class="col-md-5 col_equal_height">
+                <div class="well" style="text-align: center;">
+                    <table class="table summary">
+                        <tbody>
+                            <tr>
+                                <td>Billable Hours</td><td><span id="billable_hours"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Non-billable Hours</td><td><span id="support_hours"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Total Hours</td><td><span id="total_hours"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Expected Billable</td><td><span id="expected"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div class="expected_chart" id="expected_chart"></div>
+            </div>
+            <div class="col-md-7 col_equal_height">
+                <div class="chart" id="chart" style="height: 80%;"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js_body %}
+    <script language="javascript" src='http://code.highcharts.com/highcharts.js'></script>
+	<script language="javascript" src='/static/js/home.js'></script>
+	<script language="javascript">
+		// highlight the tab we're on
+		$('#home_link').toggleClass('selected_nav');
+		GetOverview();
+		GetDistro();
+	</script>
+{% endblock %}

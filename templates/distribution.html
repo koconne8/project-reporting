@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Redmine Time-tracking Distribution{% endblock %}
+
+{% block css %}
+    <link href='/static/css/visualize.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div class="well">
+	{% if request.user.is_staff %}
+	<input type="radio" name="view_type" id="view_project" checked="true" style="display: inline;"/><label for="view_project" style="margin-left: 5px;">Project</label>
+	<input type="radio" name="view_type" id="view_programmer" style="margin-left: 20px;"/><label for="view_programmer" style="margin-left: 5px;">Developer</label>
+	<br /><br />
+	{% endif %}
+
+	<span class="from_date">From: <input type="text" id="start_date" style="height: auto;"/></span>
+	<span class="to_date">To: <input type="text" id="end_date"  style="height: auto;"/></span>
+
+	{% if request.user.is_staff %}
+	<section class="entity" style="display: inline; margin-left: 20px;">
+
+	</section>
+	{% endif %}
+	{% if request.user.is_staff %}
+	<button type="button" id="generate_manager_view" class="generate_view" style="margin-left: 20px;">View</button>
+	{% else %}
+	<button type="button" id="generate_view" class="generate_programmers_view" style="margin-left: 20px;">View</button>
+	{% endif %}
+	</div>
+
+	<section class="visual">
+		<div id="chart" style="height: 80%;"></div>
+		<div id="budget_holder" class="budget_holder">
+			<span>Budget Progress: </span><div id="budget_progress" class="budget_progress"></div><span id="budget_amount"></span>
+		</div>
+		<div id="no_budget" class="no_budget">Budget information has not yet been entered into the project's Redmine page.</div>
+		<br /><br />
+	</section>
+{% endblock %}
+
+{% block js_body %}
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+    <script language="javascript" src='http://code.highcharts.com/highcharts.js'></script>
+	<script language="javascript" src='/static/js/visualize.js'></script>
+	<script language="javascript">
+		init();
+		$('#vis_link').toggleClass("selected_nav");
+	</script>
+	{% if request.user.is_staff %}
+	<script language="javascript">
+		function UpdateEntityList(selected_entity)
+		{
+        		if($('#chart').html() != '')
+                	ClearChart();
+
+		        if(($('#view_project').is(':checked') || $('#view_programmer').is(':checked')) && $('#start_date').val() != "" && $('#end_date').val() != "" )
+        		{
+		                var entity = 'project';
+                		if($('#view_programmer').is(':checked'))
+                        		entity = 'programmer';
+		                $.ajax({
+                	        url: "../get_entities",
+                        	data: {type: entity, start_date: $('#start_date').val(), end_date: $('#end_date').val()},
+                        	dataType: 'json',
+                        	success: function(data){
+        	                	        $('.entity').html('');
+
+		                                var ents = document.createElement("SELECT");
+		                                ents.id = 'selected_entity';
+
+	                                	list = data.entries;
+	                                	for(var i = 0; i < list.length; i++)
+	                                	{
+	                                	        var option = document.createElement("OPTION");
+	                                	        $(option).val(list[i].id);
+	                                	        $(option).html(list[i].name);
+                                                if(list[i].name == selected_entity)
+                                                    $(option).attr('selected', 'selected');
+                                                                    $(ents).append(option);
+	                                	}
+	                                	$('.entity').append(ents);
+	                                	$(ents).change(function(){
+	                                	        if($('#chart').html() != '')
+	                                	                ClearChart();
+	                                	});
+	                                	//$('#generate_manager_view').css('display', 'block');
+
+						// if we had a name passed in, go ahead and update the view!
+						if(selected_entity != '')
+							GenerateView();
+
+	                        	},
+	                        	error: function(){
+	                                	alert("Failed to get entitiy list");
+	                        	}
+	                	});
+	        	}
+		}
+
+		function SetupManagerChart(data, title)
+		{
+        		var total = data.total;
+        		var entries = data.entries;
+
+        		data_list = new Array();
+
+        		for(var i = 0; i < entries.length; i++)
+        		{
+        		        var entry = new Array(entries[i].name, ((entries[i].hours / total) * 100), entries[i].hours);
+        		        data_list.push(entry);
+        		}
+
+        		var chart_title = title;
+
+        		main_chart = new Highcharts.Chart({
+                		chart: {
+                        		renderTo: 'chart',
+                        		plotBackgroundColor: null,
+                        		plotBorderWidth: null,
+                        		plotShadow: false,
+					backgroundColor: 'rgba(255, 255, 255, 0.0)'
+                		},
+		                title: {
+                		        text: chart_title
+		                },
+        	        	tooltip: {
+					formatter: function(){
+						for(var i = 0; i < data_list.length; i++)
+						{
+							if(data_list[i][0] == this.point.name)
+								return '<b>'+this.point.name + ':</b> ' + parseFloat(Math.round(data_list[i][1] * 100)/100).toFixed(1) + '%<br>'+data_list[i][2]+' hours';
+						}
+						return this.point.name + ': '+this.point.percentage + '%';
+					}
+                	        	//pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b> - {series[2]}'
+	                	},
+                		plotOptions:{
+                        		pie: {
+                                		allowPointSelect: true,
+                                		cursor: 'pointer',
+                                		dataLabels: {
+                                        		enabled: true,
+                                        		color: '#000000',
+                                        		connectorColor: '#000000',
+                                	        	format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        	        	}
+                        		}
+                		},
+	                	series: [{
+        	                		type: 'pie',
+                	        		name: 'Time Distribution',
+                			        data: data_list,
+						point:{
+							events:{
+								click: function(){
+									var name = this.name;
+									// toggle the selection (proj/dev)
+									if($('#view_project').attr('checked'))
+										$('#view_programmer').attr('checked', 'checked');
+									else
+										$('#view_project').attr('checked', 'checked');
+									// update the list
+									UpdateEntityList(name);
+								}
+							}
+						}
+        		        }],
+		        });
+		}
+
+
+		function GenerateView()
+		{
+        		 var entity = 'project';
+        		 if($('#view_programmer').is(':checked'))
+                		entity = 'programmer';
+
+		        $.ajax({
+                		url: "../get_distribution",
+                		data: {type: entity, id: $('#selected_entity').val(), start_date: $('#start_date').val(), end_date: $('#end_date').val()},
+                		dataType: 'json',
+                		success: function(data){
+					var title = '';
+					if(entity == 'programmer')
+						title = 'Time Distribution for ' + $("#selected_entity option:selected").text();
+					else
+						title = 'Time Distribution for the project '+ $("#selected_entity option:selected").text();
+
+                        		SetupManagerChart(data, title);
+
+                        		if(entity == 'project')
+                        		{
+                                		if(data.budget != '')
+                                		{
+                                        		$('#budget_amount').html('$'+data.accumulative+' of $'+data.budget);
+
+        		                                if(data.accumulative != '')
+                        		                {
+                                        		        var ac = document.createElement("DIV");
+                                        	        	$(ac).css('display', 'block');
+                                                		if(parseFloat(data.accumulative) <= parseFloat(data.budget))
+                                                        		$(ac).css('background-color', '#00FF00');
+                                                		else
+                                                        		$(ac).css('background-color', '#FF0000');
+                                                		$(ac).css('height', '20px');
+                                                		$(ac).css('border-right', '1px solid black');
+		                                                if(parseFloat(data.accumulative) >= parseFloat(data.budget))
+                	                                	        $(ac).css('width', '100%');
+                        	                	        else
+                                		                        $(ac).css('width', ((parseFloat(data.accumulative) / parseFloat(data.budget)) * 100) + '%');
+
+		                                                $('#budget_progress').html('');
+                		                                $('#budget_progress').append(ac);
+
+        		                                }
+
+                        		                $('#budget_holder').css('display', 'block');
+                                        		$('#no_budget').css('display', 'none');
+                                		}
+		                                else
+                		                {
+                                		        $('#no_budget').css('display', 'block');
+                                        		$('#budget_holder').css('display', 'none');
+                                		}
+                        		}
+                		},
+		                error: function(){
+                		        alert("Failed to get distribution");
+                		}
+       			 });
+		}
+
+
+		$('#view_project').click(function(){
+			UpdateEntityList('');
+		});
+
+		$('#view_programmer').click(function(){
+			UpdateEntityList('');
+		});
+
+		$('#generate_manager_view').click(function(){
+			GenerateView();
+		});
+
+		UpdateEntityList('');
+	</script>
+	{% endif %}
+
+{% endblock %}

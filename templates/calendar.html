@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Redmine Time-tracking Calendar{% endblock %}
+
+{% block css %}
+    <link href='/static/css/fullcalendar.min.css' rel="stylesheet" type="text/css" />
+    <link href='/static/css/full_calendar.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+
+    <section class="date_selection">
+    <div class="row">
+        <div class="span10" style="padding-left: 20px;">
+            {% if request.user.is_staff %}
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="username" val="">User</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="user_dropdown" style="max-height: 400px; overflow-y: auto;">
+
+                </ul>
+            </div>
+            {%  endif %}
+
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="month_name" val="">Month</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="month_dropdown">
+
+                </ul>
+            </div>
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="year_name" val="">Year</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="year_dropdown">
+
+                </ul>
+            </div>
+            <span id="status_update"></span>
+        </div>
+    </div>
+        <!-- <img src="/reports/media/img/list.png" title="Switch to List View" id="list_link" class="list_link"/>
+		<img src="/reports/media/img/piechart.png" title="Time Distribution" id="distribution_link" class="distribution_link" />	-->
+
+	</section>
+
+    <hr />
+
+	<section class="overview" style="padding-left: 20px; padding-right: 20px;">
+        <div class="well" style="text-align: center;">
+            <table class="table summary">
+                <tbody>
+                    <tr>
+                        <td>Billable Hours</td><td><span id="billable_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Non-billable Hours</td><td><span id="support_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total Hours</td><td><span id="total_hours"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Expected Billable</td><td><span id="expected"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% if role == 'manager' %}
+            <div id="managers_link" class="ml"></div>
+            {% endif %}
+        </div>
+    </section>
+
+
+    <div id="calendar" class="calendar_display"></div>
+{% endblock %}
+
+{% block js_body %}
+
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+	<script language="javascript" src='/static/js/moment.js'></script>
+	<script language="javascript" src='/static/js/fullcalendar.min.js'></script>
+	<script language="javascript" src='/static/js/full_calendar.js'></script>
+	<script language="javascript">
+			init();
+			$('#calendar_link').toggleClass('selected_nav');
+
+	</script>
+{% endblock %}

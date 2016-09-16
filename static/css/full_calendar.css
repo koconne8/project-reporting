@@ -1,0 +1,76 @@
+td.day{
+    overflow: hidden;
+    border: 1px solid gray;
+    height: 150px;
+    background-color: #FFFFFF;
+}
+
+td.empty_day{
+    background-color: #efefef;
+}
+
+.table{
+    table-layout: fixed;
+}
+
+.day_display_number{
+    font-size: 10px;
+    display: inline-block;
+}
+
+.hour_display{
+    font-size: 10px;
+    display: inline-block;
+    float: right;
+}
+
+.day-table{
+    font-size: 12px;
+    margin: 0px;
+}
+
+.day-table td{
+    border-top: none;
+    padding: 0px;
+    vertical-align: middle;
+}
+
+td.hour-entry{
+    text-align: right;
+    padding-right: 10px;
+}
+
+td.project-entry{
+    padding-left: 10px;
+}
+
+.day-table tr{
+    /*border: 1px solid #acacac;*/
+    border-top: 1px solid #fefefe;
+    border-bottom: 1px solid #fefefe;
+    background-color: #e0fed0;
+}
+
+
+tr.non-billable-row{
+    background-color: #d0e5f0;
+}
+
+div.holiday{
+    font-size: 12px;
+    text-align: center;
+}
+
+table.summary span{
+    float: right;
+    margin-right: 20px;
+}
+
+div.calendar_display{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#status_update{
+    margin-left: 20px;
+}

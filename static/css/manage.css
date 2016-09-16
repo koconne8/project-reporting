@@ -1,0 +1,58 @@
+table.summary span{
+    float: right;
+    margin-right: 20px;
+}
+
+th.project_header{
+    cursor: pointer;
+}
+
+th.date_header{
+    cursor: pointer;
+}
+
+th.hours_header{
+    cursor: pointer;
+}
+
+th.activity_header{
+    cursor: pointer;
+}
+
+input.entry_date{
+    height: 100%;
+}
+
+input.entry_hours{
+    height: 100%;
+}
+
+input.comment{
+    height: 100%;
+}
+
+input.entry_issue{
+    height: 100%;
+}
+
+button.delete_button{
+    float: right;
+    margin-right: 5px;
+}
+
+.save_section{
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+tr.new_entry{
+    background-color: #baddeb;
+}
+
+.time_entry_mod{
+    background-color: #e2d997;
+}
+
+div.entry_well{
+    overflow-y: auto;
+}
