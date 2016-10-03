@@ -338,7 +338,7 @@ def GenerateInternalReport(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                'SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, time_entries.spent_on FROM time_entries INNER JOIN users ON time_entries.user_id=users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE (time_entries.project_id = ANY(childlist(%(project_id)s)) OR time_entries.project_id = %(project_id)s) AND enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND tmonth = %(month)s AND tyear = %(year)s AND time_entries.project_id IN %(list)s GROUP BY users.lastname, users.firstname, users.login, custom_values.value, time_entries.spent_on ORDER BY users.lastname, users.firstname;' % {
+                'SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, time_entries.spent_on FROM time_entries INNER JOIN users ON time_entries.user_id=users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE (time_entries.project_id = ANY(childlist(%(project_id)s)) OR time_entries.project_id = %(project_id)s) AND enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND tmonth = %(month)s AND tyear = %(year)s AND time_entries.project_id IN %(list)s AND custom_values.value NOT LIKE \'%%Statistical%%\' GROUP BY users.lastname, users.firstname, users.login, custom_values.value, time_entries.spent_on ORDER BY users.lastname, users.firstname;' % {
                     'project_id': project, 'month': request.GET['month'], 'year': request.GET['year'],
                     'list': required_list})
             times = cur.fetchall()
@@ -591,6 +591,7 @@ def GenerateCSRReport(request):
                 'AND custom_values.value NOT LIKE \'%%(external)%%\' '
                 'AND tmonth = %(month)s AND tyear = %(year)s '
                 'AND time_entries.project_id IN %(list)s '
+                'AND custom_values.value LIKE \'%%Statistical%%\''
                 'GROUP BY users.lastname, users.firstname, users.login, custom_values.value, time_entries.spent_on '
                 'ORDER BY users.lastname, users.firstname;' % {
                     'project_id': project, 'month': request.GET['month'], 'year': request.GET['year'],
