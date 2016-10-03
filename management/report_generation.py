@@ -223,7 +223,7 @@ def GenerateInternalReport(request):
               'Unit', 'Price', 'Service Category', 'Secondary Comments', 'PI\'s Name', 'Purchaser\'s Last Name',
               'Short Contributing Center Name', 'Resource Name', 'Line Item Assistant', 'Line Item Comments']
 
-    project_list = request.GET['ProjectList'][1:-1].replace('"', '').split(',')
+    project_list = request.GET['ProjectList'].replace('"', '').split(',')
 
     # create a CSV reponse type
     response = HttpResponse(content_type='text/csv')
@@ -466,7 +466,7 @@ def GenerateCSRReport(request):
               'Unit', 'Price', 'Service Category', 'Secondary Comments', 'PI\'s Name', 'Purchaser\'s Last Name',
               'Short Contributing Center Name', 'Resource Name', 'Line Item Assistant', 'Line Item Comments']
 
-    project_list = request.GET['ProjectList'][1:-1].replace('"', '').split(',')
+    project_list = request.GET['ProjectList'].replace('"', '').split(',')
 
     # create a CSV reponse type
     response = HttpResponse(content_type='text/csv')
