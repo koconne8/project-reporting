@@ -113,17 +113,33 @@ function init()
 	//------------------- Add POST Submission to Generate Button ---------------------------------------//
 	$('#internal_button').click(function(){
 		// submit to have our stuff generated!
-		window.location.href = '../generate_internal_report?ProjectList='+localStorage[LOCAL_STORAGE_KEY_NAME]+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
+		var list = [];
+		$('[name="project_choice"]').each(function(){
+			if($(this).is(':checked')){
+				list.push($(this).attr('id'));
+			}
+		});
+		window.location.href = '../generate_internal_report?ProjectList='+list+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
 	});
 
 	$('#external_button').click(function(){
 		// submit to gather all external-only information
-		window.location.href = '../generate_external_report?ProjectList='+localStorage[LOCAL_STORAGE_KEY_NAME]+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
+		$('[name="project_choice"]').each(function(){
+			if($(this).is(':checked')){
+				list.push($(this).attr('id'));
+			}
+		});
+		window.location.href = '../generate_external_report?ProjectList='+list+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
 	});
 
 	$('#csr_button').click(function(){
 		// submit to gather all external-only information
-		window.location.href = '../generate_csr_report?ProjectList='+localStorage[LOCAL_STORAGE_KEY_NAME]+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
+		$('[name="project_choice"]').each(function(){
+			if($(this).is(':checked')){
+				list.push($(this).attr('id'));
+			}
+		});
+		window.location.href = '../generate_csr_report?ProjectList='+list+'&month='+$('#month').val()+'&year='+$('#year').val()+'&all_projects='+$('#check_all_box').attr('checked');
 	});
 
 	$('#check_all_box').change(function(){

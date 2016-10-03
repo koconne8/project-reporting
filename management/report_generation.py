@@ -249,6 +249,9 @@ def GenerateInternalReport(request):
         required_list += project + ','
     required_list = required_list[:-1] + ')'
 
+    print required_list
+    print len(required_list.split(','))
+
     # NOTE: Here is an explination of what should be gathered:
     #  Primary Comments: 		Project Name
     #  Customer Account Number: 	FOPAL
@@ -425,35 +428,35 @@ def GenerateInternalReport(request):
                 writer.writerow(new_record)
 
     # now get all of the unassigned hours and add these to the CSV
-    if request.GET['all_projects'] == 'checked':
-        cur.execute(
-            "SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, projects.name FROM time_entries INNER JOIN users ON time_entries.user_id = users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND time_entries.project_id NOT IN %(list)s AND tmonth = %(month)s AND tyear = %(year)s GROUP BY users.lastname, users.firstname, custom_values.value, users.login, projects.name ORDER BY projects.name, users.login;" % {
-                'month': request.GET['month'], 'year': request.GET['year'], 'list': required_list})
-
-        day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
-        unassigned = cur.fetchall()
-        for record in unassigned:
-            new_record = []
-            new_record.append(record[5])  # Primary Comments
-            new_record.append('')  # Customer Account Number (unknown)
-            new_record.append(
-                str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction date
-            new_record.append(cost_lib.getCORESName(record[3]))  # Service Description
-            new_record.append(record[0])  # Quantity (hours)
-            new_record.append('Hour')  # Unit (Hours)
-            new_record.append(cost_lib.getCost(record[3]))  # Hourly Rate
-            new_record.append(cost_lib.getCORESName(record[3]))  # Service Category
-            new_record.append('""')  # Secondary comments (always empty)
-            new_record.append('""')  # Financially responsible PI (unknown)
-            new_record.append('""')  # Purchaser's last name (unkown)
-            new_record.append('""')  # Short contributing Center name (always empty)
-            new_record.append('""')  # Resource Name (always empty)
-            new_record.append('"' + record[4] + '"')  # Line item assistant (netID of the user)
-            new_record.append('""')  # Line item comment (always empty)
-
-            # write row!
-            writer.writerow(new_record)
+    # if request.GET['all_projects'] == 'checked':
+    #     cur.execute(
+    #         "SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, projects.name FROM time_entries INNER JOIN users ON time_entries.user_id = users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND time_entries.project_id NOT IN %(list)s AND tmonth = %(month)s AND tyear = %(year)s GROUP BY users.lastname, users.firstname, custom_values.value, users.login, projects.name ORDER BY projects.name, users.login;" % {
+    #             'month': request.GET['month'], 'year': request.GET['year'], 'list': required_list})
+    #
+    #     day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
+    #     unassigned = cur.fetchall()
+    #     for record in unassigned:
+    #         new_record = []
+    #         new_record.append(record[5])  # Primary Comments
+    #         new_record.append('')  # Customer Account Number (unknown)
+    #         new_record.append(
+    #             str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+    #                                                                                             2:])  # Transaction date
+    #         new_record.append(cost_lib.getCORESName(record[3]))  # Service Description
+    #         new_record.append(record[0])  # Quantity (hours)
+    #         new_record.append('Hour')  # Unit (Hours)
+    #         new_record.append(cost_lib.getCost(record[3]))  # Hourly Rate
+    #         new_record.append(cost_lib.getCORESName(record[3]))  # Service Category
+    #         new_record.append('""')  # Secondary comments (always empty)
+    #         new_record.append('""')  # Financially responsible PI (unknown)
+    #         new_record.append('""')  # Purchaser's last name (unkown)
+    #         new_record.append('""')  # Short contributing Center name (always empty)
+    #         new_record.append('""')  # Resource Name (always empty)
+    #         new_record.append('"' + record[4] + '"')  # Line item assistant (netID of the user)
+    #         new_record.append('""')  # Line item comment (always empty)
+    #
+    #         # write row!
+    #         writer.writerow(new_record)
 
     return response
 
@@ -680,35 +683,35 @@ def GenerateCSRReport(request):
                 writer.writerow(new_record)
 
     # now get all of the unassigned hours and add these to the CSV
-    if request.GET['all_projects'] == 'checked':
-        cur.execute(
-            "SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, projects.name FROM time_entries INNER JOIN users ON time_entries.user_id = users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND time_entries.project_id NOT IN %(list)s AND tmonth = %(month)s AND tyear = %(year)s GROUP BY users.lastname, users.firstname, custom_values.value, users.login, projects.name ORDER BY projects.name, users.login;" % {
-                'month': request.GET['month'], 'year': request.GET['year'], 'list': required_list})
-
-        day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
-        unassigned = cur.fetchall()
-        for record in unassigned:
-            new_record = []
-            new_record.append(record[5])  # Primary Comments
-            new_record.append('')  # Customer Account Number (unknown)
-            new_record.append(
-                str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction date
-            new_record.append(cost_lib.getCORESName(record[3]))  # Service Description
-            new_record.append(record[0])  # Quantity (hours)
-            new_record.append('Hour')  # Unit (Hours)
-            new_record.append(cost_lib.getCost(record[3]))  # Hourly Rate
-            new_record.append(cost_lib.getCORESName(record[3]))  # Service Category
-            new_record.append('""')  # Secondary comments (always empty)
-            new_record.append('""')  # Financially responsible PI (unknown)
-            new_record.append('""')  # Purchaser's last name (unkown)
-            new_record.append('""')  # Short contributing Center name (always empty)
-            new_record.append('""')  # Resource Name (always empty)
-            new_record.append('"' + record[4] + '"')  # Line item assistant (netID of the user)
-            new_record.append('""')  # Line item comment (always empty)
-
-            # write row!
-            writer.writerow(new_record)
+    # if request.GET['all_projects'] == 'checked':
+    #     cur.execute(
+    #         "SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, projects.name FROM time_entries INNER JOIN users ON time_entries.user_id = users.id INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations ON enumerations.id=time_entries.activity_id INNER JOIN custom_values ON custom_values.customized_id = time_entries.id WHERE enumerations.name <> \'  Support (non-billable) \' AND custom_values.value NOT LIKE \'%%(external)%%\' AND time_entries.project_id NOT IN %(list)s AND tmonth = %(month)s AND tyear = %(year)s GROUP BY users.lastname, users.firstname, custom_values.value, users.login, projects.name ORDER BY projects.name, users.login;" % {
+    #             'month': request.GET['month'], 'year': request.GET['year'], 'list': required_list})
+    #
+    #     day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
+    #     unassigned = cur.fetchall()
+    #     for record in unassigned:
+    #         new_record = []
+    #         new_record.append(record[5])  # Primary Comments
+    #         new_record.append('')  # Customer Account Number (unknown)
+    #         new_record.append(
+    #             str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+    #                                                                                             2:])  # Transaction date
+    #         new_record.append(cost_lib.getCORESName(record[3]))  # Service Description
+    #         new_record.append(record[0])  # Quantity (hours)
+    #         new_record.append('Hour')  # Unit (Hours)
+    #         new_record.append(cost_lib.getCost(record[3]))  # Hourly Rate
+    #         new_record.append(cost_lib.getCORESName(record[3]))  # Service Category
+    #         new_record.append('""')  # Secondary comments (always empty)
+    #         new_record.append('""')  # Financially responsible PI (unknown)
+    #         new_record.append('""')  # Purchaser's last name (unkown)
+    #         new_record.append('""')  # Short contributing Center name (always empty)
+    #         new_record.append('""')  # Resource Name (always empty)
+    #         new_record.append('"' + record[4] + '"')  # Line item assistant (netID of the user)
+    #         new_record.append('""')  # Line item comment (always empty)
+    #
+    #         # write row!
+    #         writer.writerow(new_record)
 
     return response
 
