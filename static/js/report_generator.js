@@ -124,6 +124,7 @@ function init()
 
 	$('#external_button').click(function(){
 		// submit to gather all external-only information
+		var list = [];
 		$('[name="project_choice"]').each(function(){
 			if($(this).is(':checked')){
 				list.push($(this).attr('id'));
@@ -134,6 +135,7 @@ function init()
 
 	$('#csr_button').click(function(){
 		// submit to gather all external-only information
+		var list = [];
 		$('[name="project_choice"]').each(function(){
 			if($(this).is(':checked')){
 				list.push($(this).attr('id'));
