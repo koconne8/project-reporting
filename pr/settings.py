@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'management',
+    'django_extensions',
+    'skillsmatrix.apps.SkillsmatrixConfig'
 ]
 
 MIDDLEWARE = [
@@ -81,7 +83,7 @@ DATABASES = {
         'NAME': 'redmine',
         'USER': 'redmine',
         'PASSWORD': 'redminepass',
-        'HOST': 'localhost', #''129.74.246.37',
+        'HOST': '129.74.246.37',
         'PORT': '5432'
     }
 }
