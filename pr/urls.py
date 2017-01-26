@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.conf.urls import include
 
 from management.planning import Home as PlanningHome, GetAllDevAssignments, GetAssignments, GetPlanningProjection, \
     DeveloperAssignments, Deactivate, Activate, UpdateSupervisor, RemoveAssignment, AddAssignment
@@ -52,7 +53,7 @@ urlpatterns = [
     url(r'^get_entities/$', GetEntities, name="get_entities"),
 
 
-
+    url(r'^skillsmatrix/', include('skillsmatrix.urls')),
 
 
     #------------- Marcy's Report Generator for CORES -----------#
