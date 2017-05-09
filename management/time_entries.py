@@ -1,18 +1,18 @@
 from django.shortcuts import HttpResponse, render
 from django.db import connection
 import datetime
-from holidays import GetHolidays
 import calendar
 import json
 from django.contrib.auth.decorators import login_required
 
+
 @login_required
-def EntriesHome(request):
+def entries_home(request):
     return render(request, 'time_entries.html', {})
 
 
 @login_required
-def GetDateRange(request):
+def get_date_range(request):
     cur = connection.cursor()
 
     # gather a list of all years
@@ -41,8 +41,9 @@ def GetDateRange(request):
     context = {'months': month_list, 'years': year_list}
     return HttpResponse(json.dumps(context))
 
+
 @login_required
-def GetProjectActivities(request):
+def get_project_activities(request):
     project = request.GET['project']
 
     # connect to the database
@@ -50,7 +51,8 @@ def GetProjectActivities(request):
 
     # first get any that are specific to our project
     cur.execute(
-        "SELECT name FROM enumerations WHERE type = 'TimeEntryActivity' and project_id = %(proj)s and active = FALSE;" % {
+        "SELECT name FROM enumerations WHERE type = 'TimeEntryActivity' and project_id = %(proj)s "
+        "and active = FALSE;" % {
             'proj': project})
     exclusions = cur.fetchall()
     exclude_list = []
@@ -73,8 +75,9 @@ def GetProjectActivities(request):
 
     return HttpResponse(json.dumps(activity_list))
 
+
 @login_required
-def UpdateEntries(request):
+def update_entries(request):
     # grab our list of entries to update
     entries = json.loads(request.GET['entries'])
 
@@ -97,7 +100,8 @@ def UpdateEntries(request):
     for entry in entries:
         if entry['id'] != 'new_entry':
             cur.execute(
-                "SELECT users.login, users.id FROM users INNER JOIN time_entries ON time_entries.user_id = users.id WHERE time_entries.id = %(entry)s;" % {
+                "SELECT users.login, users.id FROM users INNER JOIN time_entries "
+                "ON time_entries.user_id = users.id WHERE time_entries.id = %(entry)s;" % {
                     'entry': entry['id']})
             userid = cur.fetchone()
             target = userid[0]
@@ -126,8 +130,9 @@ def UpdateEntries(request):
 
         # grab the old record
         if entry['id'] != 'new_entry':
-            query = "SELECT id, project_id, user_id, issue_id, hours, comments, activity_id, spent_on, tyear, tmonth, tweek, created_on, updated_on FROM time_entries WHERE id = %(id)s;" % {
-                'id': entry['id']}
+            query = "SELECT id, project_id, user_id, issue_id, hours, comments, activity_id, spent_on, " \
+                    "tyear, tmonth, tweek, created_on, updated_on FROM time_entries WHERE id = %(id)s;" % {
+                        'id': entry['id']}
             cur.execute(query)
             old_record = cur.fetchone()
         else:
@@ -136,17 +141,25 @@ def UpdateEntries(request):
         # check the entry's ID...if it is "new_entry", then we insert
         # otherwise we update
         if entry['id'] == 'new_entry':
-            query = "INSERT INTO time_entries (project_id, user_id, spent_on, hours, comments, issue_id, activity_id, tyear, tmonth, tweek, created_on, updated_on) VALUES (%(project)s, %(user)s, '%(date)s', %(hours)s, '%(comments)s', %(issue)s, %(activity)s, %(year)s, %(month)s, %(week)s, '%(now)s', '%(now)s') RETURNING *;" % {
-                'project': entry['project'], 'user': target_id, 'date': entry['date'], 'hours': float(entry['hours']),
-                'comments': entry['comments'].replace("'", "''"), 'issue': issue, 'activity': entry['activity'],
-                'year': edate[0], 'month': edate[1], 'week': entry_date.isocalendar()[1],
-                'now': datetime.datetime.now().isoformat()}
+            query = "INSERT INTO time_entries (project_id, user_id, spent_on, hours, comments, issue_id, " \
+                    "activity_id, tyear, tmonth, tweek, created_on, updated_on) VALUES (%(project)s, %(user)s, " \
+                    "'%(date)s', %(hours)s, '%(comments)s', %(issue)s, %(activity)s, %(year)s, %(month)s, " \
+                    "%(week)s, '%(now)s', '%(now)s') RETURNING *;" % {
+                        'project': entry['project'], 'user': target_id, 'date': entry['date'],
+                        'hours': float(entry['hours']),
+                        'comments': entry['comments'].replace("'", "''"), 'issue': issue, 'activity': entry['activity'],
+                        'year': edate[0], 'month': edate[1], 'week': entry_date.isocalendar()[1],
+                        'now': datetime.datetime.now().isoformat()}
         else:
             # construct the query
-            query = "UPDATE time_entries SET project_id = %(project)s, spent_on = '%(date)s', hours = %(hours)s, comments = '%(comments)s', issue_id = %(issue)s, activity_id = %(activity)s, tyear = %(year)s, tmonth = %(month)s, tweek = %(week)s WHERE id = %(entry_id)s RETURNING *;" % {
-                'project': entry['project'], 'date': entry['date'], 'hours': float(entry['hours']),
-                'comments': entry['comments'].replace("'", "''"), 'issue': issue, 'activity': entry['activity'],
-                'entry_id': entry['id'], 'year': edate[0], 'month': edate[1], 'week': entry_date.isocalendar()[1]}
+            query = "UPDATE time_entries SET project_id = %(project)s, spent_on = '%(date)s', hours = %(hours)s, " \
+                    "comments = '%(comments)s', issue_id = %(issue)s, activity_id = %(activity)s, " \
+                    "tyear = %(year)s, tmonth = %(month)s, tweek = %(week)s WHERE id = %(entry_id)s " \
+                    "RETURNING *;" % {
+                        'project': entry['project'], 'date': entry['date'], 'hours': float(entry['hours']),
+                        'comments': entry['comments'].replace("'", "''"), 'issue': issue, 'activity': entry['activity'],
+                        'entry_id': entry['id'], 'year': edate[0], 'month': edate[1],
+                        'week': entry_date.isocalendar()[1]}
 
         # execute the query
         cur.execute(query)
@@ -155,18 +168,21 @@ def UpdateEntries(request):
         timeid = cur.fetchone()[0]
 
         if entry['id'] == 'new_entry':
-            query = "INSERT INTO custom_values (customized_id, custom_field_id, value, customized_type) VALUES (%(id)s, 9, '%(value)s', 'TimeEntry');" % {
-                'id': timeid, 'value': entry['logas']}
+            query = "INSERT INTO custom_values (customized_id, custom_field_id, value, customized_type) " \
+                    "VALUES (%(id)s, 9, '%(value)s', 'TimeEntry');" % {
+                        'id': timeid, 'value': entry['logas']}
         else:
-            query = "UPDATE custom_values SET value = '%(value)s' WHERE customized_id = %(id)s AND custom_field_id = 9 AND customized_type = 'TimeEntry';" % {
-                'id': entry['id'], 'value': entry['logas']}
+            query = "UPDATE custom_values SET value = '%(value)s' WHERE customized_id = %(id)s " \
+                    "AND custom_field_id = 9 AND customized_type = 'TimeEntry';" % {
+                        'id': entry['id'], 'value': entry['logas']}
         cur.execute(query)
 
         # if the user performing this action is NOT the target, let's record this change...
         if target != user:
-            query = "INSERT INTO time_entry_log (\"user\", old_record, new_record, \"timestamp\", target) VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
-                'user': user, 'old': str(old_record).replace('\'', ''), 'new': str(entry).replace('\'', ''),
-                'time': str(datetime.datetime.now()), 'target': target}
+            query = "INSERT INTO time_entry_log (\"user\", old_record, new_record, \"timestamp\", target) " \
+                    "VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
+                        'user': user, 'old': str(old_record).replace('\'', ''), 'new': str(entry).replace('\'', ''),
+                        'time': str(datetime.datetime.now()), 'target': target}
             cur.execute(query)
 
     # if we made it out ok, let's commit it!
@@ -174,8 +190,9 @@ def UpdateEntries(request):
 
     return HttpResponse("200")
 
+
 @login_required
-def DeleteEntry(request):
+def delete_entry(request):
     # grab our list of entries to update
     entry = json.loads(request.GET['entry'])
 
@@ -194,13 +211,13 @@ def DeleteEntry(request):
     target = user
     if target in request.GET and request.GET['target'] is not None and request.GET['target'] != '':
         target = request.GET['target']
-    target_id = ''
+
     cur.execute(
-        "SELECT users.login, users.id FROM users INNER JOIN time_entries ON time_entries.user_id = users.id WHERE time_entries.id = %(entry)s;" % {
+        "SELECT users.login, users.id FROM users INNER JOIN time_entries "
+        "ON time_entries.user_id = users.id WHERE time_entries.id = %(entry)s;" % {
             'entry': entry})
     userid = cur.fetchone()
     target = userid[0]
-    target_id = userid[1]
     if (target != user) and (not request.user.is_staff):
         return HttpResponse("Error 97")
 
@@ -216,9 +233,10 @@ def DeleteEntry(request):
 
     # if the user performing this action is NOT the target, let's record this removal...
     if target != user:
-        query = "INSERT INTO time_entry_log (\"user\", old_record, new_record, \"timestamp\", target) VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
-            'user': user, 'old': str(old_entry).replace('\'', ''), 'new': 'RECORD DELETED',
-            'time': str(datetime.datetime.now()), 'target': target}
+        query = "INSERT INTO time_entry_log (\"user\", old_record, new_record, \"timestamp\", target) " \
+                "VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
+                    'user': user, 'old': str(old_entry).replace('\'', ''), 'new': 'RECORD DELETED',
+                    'time': str(datetime.datetime.now()), 'target': target}
         cur.execute(query)
 
     # commit!

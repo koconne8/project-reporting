@@ -7,7 +7,7 @@ AVG_HOUR_BILL = 131
 AVG_MAN_BILL = 80
 
 
-def GetWinterBreak(month, year):
+def get_winter_break(month, year):
     """
     Depending on what day Christmas falls on, we adjust how many days we get off.
     This also depends on if the passed in month is 1 or 12 (January or December).
@@ -23,9 +23,9 @@ def GetWinterBreak(month, year):
     """
     # create the date we're looking for (Christmas of this year)
     if month == 1:
-        year = year - 1
+        year -= 1
 
-    christmas = datetime.date(year, 12, 25);
+    christmas = datetime.date(year, 12, 25)
 
     # what day of the week is this?
     if christmas.isoweekday() == 7:
@@ -52,7 +52,7 @@ def GetWinterBreak(month, year):
 
     # now create a list of days we have "off" from start_date to end_date
     days_off = []
-    current_date = start_date;
+    current_date = start_date
     # loop through all dates between our start and end vacation days
     while current_date <= end_date:
         # only add it if it is a weekday (of course we don't work weekends!)
@@ -62,7 +62,7 @@ def GetWinterBreak(month, year):
             if current_date == end_date or current_date == (end_date - datetime.timedelta(days=1)):
                 holiday['name'] = 'New Years Celebration'
             else:
-                holiday['name'] = 'Christmas Break';
+                holiday['name'] = 'Christmas Break'
             days_off.append(holiday)
         # go to the next date!
         current_date = current_date + datetime.timedelta(days=1)
@@ -71,10 +71,11 @@ def GetWinterBreak(month, year):
     return days_off
 
 
-def GetGoodFriday(year):
+def get_good_friday(year):
     """
     Returns the date of Good Friday for the year passed in.
-    (NOTE: Algorithm for determining Easter taken from "Butcher's Algorithm" for determining Easter for the Western Church.
+    (NOTE: Algorithm for determining Easter taken from "Butcher's Algorithm" for determining
+    Easter for the Western Church.
     Works on any date 1583 and onward.
     Reference: http://code.activestate.com/recipes/576517-calculate-easter-western-given-a-year/).
     """
@@ -97,7 +98,7 @@ def GetGoodFriday(year):
     return holiday
 
 
-def GetMemorialDay(year):
+def get_memorial_day(year):
     """
     Returns the date of Memorial Day (last Monday in May).
     """
@@ -116,31 +117,31 @@ def GetMemorialDay(year):
     return holiday
 
 
-def GetIndependenceDay(year):
+def get_independence_day(year):
     """
     Returns the day for celebrating Indedependence Day.
     If July 4th falls on Saturday, the previous Friday is off.
     If July 4th falls on Sunday, the next Monday is off.
     """
-    id = datetime.date(year, 7, 4)
+    independence_day = datetime.date(year, 7, 4)
 
     # if July 4th is a Saturday...
-    if id.isoweekday() == 6:
+    if independence_day.isoweekday() == 6:
         # we celebrate the previous day (Friday)
-        id = datetime.date(year, 7, 3)
+        independence_day = datetime.date(year, 7, 3)
     # if July 4th is a Sunday...
-    if id.isoweekday() == 7:
+    if independence_day.isoweekday() == 7:
         # we celebrate the next day (Monday)
-        id = datetime.date(year, 7, 5)
+        independence_day = datetime.date(year, 7, 5)
 
     holiday = {}
-    holiday['date'] = id
+    holiday['date'] = independence_day
     holiday['name'] = 'Independence Day'
 
     return holiday
 
 
-def GetLaborDay(year):
+def get_labor_day(year):
     """
     Returns the day for Labor Day of the given year. (First Monday in September)
     """
@@ -157,7 +158,7 @@ def GetLaborDay(year):
     return holiday
 
 
-def GetThanksgivingBreak(year):
+def get_thanksgiving_break(year):
     """
     Returns the date of Thanksgiving and the following Friday (we always get those two days off).
     Thanksgiving is always the 4th Thursday of November.
@@ -190,7 +191,7 @@ def GetThanksgivingBreak(year):
     return [holiday1, holiday2]
 
 
-def GetClosings(year):
+def get_closings(year):
     """
     Returns a list of dates within the year passed in of
     University Closings (non-holidays, such as Snow days)
@@ -215,23 +216,22 @@ def GetClosings(year):
     return date_list
 
 
-def GetHolidays(year):
+def get_holidays(year):
     """
     Returns a list of dates which are paid holidays.
     """
     paid_holidays = []
-    paid_holidays += GetWinterBreak(1, year) + GetWinterBreak(12, year)
-    paid_holidays.append(GetGoodFriday(year))
-    paid_holidays.append(GetMemorialDay(year))
-    paid_holidays.append(GetIndependenceDay(year))
-    paid_holidays.append(GetLaborDay(year))
-    paid_holidays += GetThanksgivingBreak(year)
-    #paid_holidays += GetClosings(year)
+    paid_holidays += get_winter_break(1, year) + get_winter_break(12, year)
+    paid_holidays.append(get_good_friday(year))
+    paid_holidays.append(get_memorial_day(year))
+    paid_holidays.append(get_independence_day(year))
+    paid_holidays.append(get_labor_day(year))
+    paid_holidays += get_thanksgiving_break(year)
 
     return paid_holidays
 
 
-def GetAverageDayHours(current_month, current_year, monthly_expected):
+def get_average_day_hours(current_month, current_year, monthly_expected):
     avg_year = monthly_expected * 12  # how many hours (average for the year)
 
     # how many working days are there this fiscal year?
@@ -240,17 +240,17 @@ def GetAverageDayHours(current_month, current_year, monthly_expected):
     if current_month < 7:
         july = datetime.date(current_year - 1, 7, 1)
 
-    holidays = GetHolidays(current_year)
+    holidays = get_holidays(current_year)
     if current_year < 7:
-        holidays += (GetHolidays(current_year - 1))
+        holidays += (get_holidays(current_year - 1))
     else:
-        holidays += (GetHolidays(current_year + 1))
+        holidays += (get_holidays(current_year + 1))
 
     current_date = july
     end_date = datetime.date(july.year + 1, 7, 1)
     working_days = 0
     while current_date < end_date:
-        working_days += GetWorkingDays(current_date.month, current_date.year)
+        working_days += get_working_days(current_date.month, current_date.year)
         current_date = current_date + relativedelta(months=1)
 
     print working_days
@@ -259,11 +259,11 @@ def GetAverageDayHours(current_month, current_year, monthly_expected):
     return avg_hours_per_day
 
 
-def GetWorkingDays(month, year):
-    holidays = GetHolidays(year)
+def get_working_days(month, year):
+    holidays = get_holidays(year)
     current_date = datetime.date(year, month, 1)
     end_date = datetime.date(year, month, calendar.monthrange(year, month)[1])
-    working_days = 0 
+    working_days = 0
 
     while current_date <= end_date:
         # is this a weekend?
@@ -274,20 +274,19 @@ def GetWorkingDays(month, year):
                     is_holiday = True
             if not is_holiday:
                 working_days += 1
-	current_date = current_date + datetime.timedelta(days=1)
+        current_date = current_date + datetime.timedelta(days=1)
     return working_days
 
 
-def GetAverageHoursForMonth(month, year):
-    average_hours_per_day = GetAverageDayHours(month, year, AVG_HOUR_BILL)
-    working_days_count = float(GetWorkingDays(month, year))
+def get_average_hours_for_month(month, year):
+    average_hours_per_day = get_average_day_hours(month, year, AVG_HOUR_BILL)
+    working_days_count = float(get_working_days(month, year))
 
     return working_days_count * average_hours_per_day
 
 
-def GetAverageHoursForMonthMANAGERS(month, year):
-    average_hours_per_day = GetAverageDayHours(month, year, AVG_MAN_BILL)
-    working_days_count = float(GetWorkingDays(month, year))
+def get_average_hours_for_month_managers(month, year):
+    average_hours_per_day = get_average_day_hours(month, year, AVG_MAN_BILL)
+    working_days_count = float(get_working_days(month, year))
 
     return working_days_count * average_hours_per_day
-

@@ -19,13 +19,12 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="../home">Redmine Time Entries</a>
         <ul class="nav navbar-nav">
-            <li><a href="../home/">Home</a></li>
-            <li><a href="../time_entries/">Entries</a></li>
-            <li><a href="../calendar/">Calendar</a></li>
-            <li><a href="../distribution/">Time Distribution</a></li>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'time_entries' %}">Entries</a></li>
+            <li><a href="{% url 'calendar' %}">Calendar</a></li>
+            <li><a href="{% url 'distribution' %}">Time Distribution</a></li>
 	    {% if user.is_staff %}
-            <li><a href="../tracker/">Project Tracker</a></li>
-            <li><a href="../hourly/">Hourly Report Generator</a></li>
+            <li><a href="{% url 'planning_home' %}">Planning</a></li>
         {% endif %}
         </ul>
     </div>

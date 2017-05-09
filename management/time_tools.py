@@ -1,15 +1,14 @@
 import datetime
 
-from holidays import GetHolidays, GetWorkingDays
+from holidays import get_holidays, get_working_days
 
 
-def GetMonthlyExpected(month=datetime.datetime.now().month, year=datetime.datetime.now().year):
+def get_monthly_expected(month=datetime.datetime.now().month, year=datetime.datetime.now().year):
     # get the first and last day of the month
-    first = datetime.date(year, month, 1)
     last = datetime.date(year, (month + 1), 1) - datetime.timedelta(days=1)
 
     # get our holidays
-    holiday_list = GetHolidays(year)
+    holiday_list = get_holidays(year)
 
     # setup a count for all weekdays
     # (Monday = [0], Tuesday = [1], etc...)
@@ -28,25 +27,26 @@ def GetMonthlyExpected(month=datetime.datetime.now().month, year=datetime.dateti
     # add up how many weekdays we have (Monday-Friday: [0]->[4])
     total = weekdays[0] + weekdays[1] + weekdays[2] + weekdays[3] + weekdays[4]
 
-    return (total * 8)
+    return total * 8
 
 
-def DateWorkingHours(day):
+def date_working_hours(day):
     if day.weekday() >= 5:
         return 0
 
-    if day in GetHolidays(day.year):
+    if day in get_holidays(day.year):
         return 0
 
     return 8
 
-def ManagerDateWorkingHours(day):
+
+def manager_date_working_hours(day):
     if day.weekday() >= 5:
         return 0
 
-    if day in GetHolidays(day.year):
+    if day in get_holidays(day.year):
         return 0
 
-    working_days = GetWorkingDays(day.month, day.year)
+    working_days = get_working_days(day.month, day.year)
 
     return float(30) / float(working_days)

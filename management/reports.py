@@ -2,19 +2,19 @@ import datetime
 from django.db import connection
 from django.shortcuts import HttpResponse
 from openpyxl import Workbook
-from holidays import GetHolidays
-from openpyxl.styles import Color, Font, PatternFill
-from openpyxl.styles import colors
+from holidays import get_holidays
 from django.contrib.auth.decorators import login_required
 
+
 @login_required
-def WeeklyReportFromUrl(request):
+def weekly_report_form_url(request):
     response = HttpResponse(content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="WeeklyReport.xls"'
 
-    return GenerateWeeklyReport(response)
+    return generate_weekly_report(response)
 
-def GenerateWeeklyReport(file_out):
+
+def generate_weekly_report(file_out):
     # get a list of all projects we should include in the report
     cur = connection.cursor()
 
@@ -38,7 +38,8 @@ def GenerateWeeklyReport(file_out):
         }
 
         # get the budget
-        cur.execute("SELECT value FROM custom_values WHERE custom_field_id = 12 AND customized_id = %(project_id)s;" % {'project_id': project[2]})
+        cur.execute("SELECT value FROM custom_values WHERE custom_field_id = 12 AND customized_id = %(project_id)s;"
+                    % {'project_id': project[2]})
         proj['budget'] = (float(cur.fetchone()[0]))
 
         # get the accumulated amount spent
@@ -57,7 +58,8 @@ def GenerateWeeklyReport(file_out):
         proj['end_date'] = cur.fetchone()[0]
 
         # get the FTE effort for TODAY
-        cur.execute("SELECT SUM(percentage) FROM project_distribution WHERE \"from\" <= now() AND \"to\" >= now() AND project = %(proj)s;" % {'proj': proj['id']})
+        cur.execute("SELECT SUM(percentage) FROM project_distribution WHERE \"from\" <= now() AND \"to\" >= now() "
+                    "AND project = %(proj)s;" % {'proj': proj['id']})
         effort = cur.fetchone()
         if len(effort) > 0:
             proj['fte'] = effort[0]
@@ -73,7 +75,7 @@ def GenerateWeeklyReport(file_out):
         while current_day <= end_date:
             # is this a working day?
             # ...first check for holidays
-            if current_day in GetHolidays(current_day.year):
+            if current_day in get_holidays(current_day.year):
                 current_day = current_day + datetime.timedelta(days=1)
                 continue
 
@@ -82,10 +84,10 @@ def GenerateWeeklyReport(file_out):
                 current_day = current_day + datetime.timedelta(days=1)
                 continue
 
-
             # for each day, figure out the FTE effort
             cur.execute(
-                "SELECT SUM(percentage) FROM project_distribution WHERE \"from\" <= '%(day)s' AND \"to\" >= '%(day)s' AND project = %(proj)s;" % {
+                "SELECT SUM(percentage) FROM project_distribution WHERE \"from\" <= '%(day)s' AND \"to\" >= '%(day)s' "
+                "AND project = %(proj)s;" % {
                     'proj': proj['id'], 'day': current_day})
             effort = cur.fetchone()
             if len(effort) > 0:
@@ -95,7 +97,8 @@ def GenerateWeeklyReport(file_out):
 
             # go get the charge rate for this day
             cur.execute(
-                "SELECT rate FROM charge_rates WHERE start_date <= '%(date)s' AND end_date >= '%(date)s' AND category = 'Programming' AND internal = TRUE;" % {
+                "SELECT rate FROM charge_rates WHERE start_date <= '%(date)s' AND end_date >= '%(date)s' "
+                "AND category = 'Programming' AND internal = TRUE;" % {
                     'date': current_day
                 }
             )
@@ -117,7 +120,6 @@ def GenerateWeeklyReport(file_out):
 
         project_list.append(proj)
 
-
     # create an active worksheet for our excel file
     wb = Workbook()
     ws = wb.active
@@ -133,8 +135,8 @@ def GenerateWeeklyReport(file_out):
     ws['I1'] = 'Billed Hours (past 7 days)'
 
     # style headers
-    header_font = Font(color=colors.WHITE)
-    header_bg = PatternFill(fill_type=None, start_color='000000', end_color='000000')
+    # header_font = Font(color=colors.WHITE)
+    # header_bg = PatternFill(fill_type=None, start_color='000000', end_color='000000')
     # font color
     # ws['B1'].font.color.index = 'FFFFFF'
     # ws['C1'].font.color.index = 'FFFFFF'
@@ -165,10 +167,7 @@ def GenerateWeeklyReport(file_out):
     # ws['H1'].style.fill.start_color.index = '000000'
     # ws['I1'].style.fill.start_color.index = '000000'
 
-
     working_row = 2
-
-    print project_list
 
     for project in project_list:
         ws['B'+str(working_row)] = project['name']
@@ -179,7 +178,6 @@ def GenerateWeeklyReport(file_out):
         ws['G'+str(working_row)] = '${:,.2f}'.format(project['projected_spending'])
         ws['H'+str(working_row)] = project['projected_ratio']
         ws['I'+str(working_row)] = project['hours']
-
 
         working_row += 1
 
