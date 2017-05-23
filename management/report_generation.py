@@ -289,12 +289,13 @@ def generate_internal_report(request):
             # first, check if there are any logged hours for this project that are part of the CSR
             cur.execute("select sum(hours) from time_entries "
                         " inner join custom_values ON custom_values.customized_id = time_entries.id "
-                        " inner join charge_rates ON custom_values.value  like charge_rates.category||'%%internal%%'"
+                        " inner join charge_rates ON custom_values.value = charge_rates.category"
                         " inner join center ON charge_rates.center = center.id"
                         " where custom_values.customized_type = 'TimeEntry'"
                         " and center.name = 'Center for Research Computing'"
                         " and time_entries.project_id = %(project_id)s;" % {'project_id': project})
             hours = cur.fetchone()
+            print "Hours for project:", hours
             if len(hours) == 1 and hours[0] is None:
                 continue
 
@@ -368,6 +369,7 @@ def generate_internal_report(request):
             day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
 
             # loop through all time records, creating a new row of information to add
+            print "Time length for project", project, ":", len(times)
             records = []
             for record in times:
                 # grab the rate for the date we're working with, along with the cores display name
@@ -377,7 +379,7 @@ def generate_internal_report(request):
                 query = "SELECT rate, cores_display FROM charge_rates WHERE '%(date)s'::date >= start_date " \
                         "AND '%(date)s'::date <= end_date AND category = '%(category)s' " \
                         "AND internal = %(internal)s;" % {
-                            'date': record[5], 'category': record[3].split(' ')[0], 'internal': internal}
+                            'date': record[5], 'category': record[3], 'internal': internal}
                 try:
                     cur.execute(query)
                     rate_info = cur.fetchone()
