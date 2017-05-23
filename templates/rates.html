@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Redmine Time-tracking Distribution{% endblock %}
+
+{% block css %}
+    <link href='/static/css/visualize.css' rel="stylesheet" type="text/css" />
+    <link rel='icon' type="image/ico" href="/static/img/report.ico" />
+    <link rel="shortcut icon" href="/static/img/report.ico" />
+    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="margin: 20px;">
+        <div class="col-lg-8" style=" max-height: 90vh; overflow: auto;">
+        <table class="table" style="border-bottom: 1px solid #ddd;" >
+            <thead>
+                <th style="width: 50px;"></th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Category</th>
+                <th>CORES Display</th>
+                <th style="text-align: right;">Rate $</th>
+{#                <th>Internal</th>#}
+            </thead>
+
+            <tbody>
+                {% for rate in rates %}
+                <tr data-id="{{ rate.id }}" style="cursor: pointer; border-left: 1px solid #ddd; border-right: 1px solid #ddd; background-color:{% if rate.dark %}#eee{% else %}inherit{% endif %}">
+                    <td style="text-align: center;"><input class="checkbox-select" type="checkbox" /></td>
+                    <td>{{ rate.start_date }}</td>
+                    <td>{{ rate.end_date }}</td>
+                    <td style="width: 20%;"><select class="form-control category">{% for category in categories %}
+                        <option value="{{ category }}" {% if category == rate.category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                        </td>
+                    <td style="width: 20%;"><input type="text" class="form-control" value="{{ rate.cores_display }}" /></td>
+                    <td style="width: 20%; text-align: right;">${{ rate.rate }}</td>
+{#                    <td>{% if rate.internal %}Internal{% else %}<span style="font-weight: bold">External</span>{% endif %}</td>#}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <div class="col-lg-4">
+            <h3>Edit Selected Rows</h3>
+            <hr />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>Start Date:</label>
+                <input type="date" class="form-control" />
+            </div>
+            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <br /><br />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>End Date:</label>
+                <input type="date" class="form-control" />
+            </div>
+            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <br /><br />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>Rate:</label>
+                <input type="text" placeholder="$" class="form-control" />
+            </div>
+            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <br /><br />
+            <button type="button" class="btn btn-danger">DELETE SELECTED</button>
+            <hr />
+            <br /><br />
+            <h3>Add New Fiscal Year</h3>
+            <hr />
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block js_body %}
+<script>
+    $(document).ready(function(){
+       $('td').click(function(){
+           var checkbox = $(this).parent().find('input.checkbox-select')[0];
+           if($(checkbox).is(':checked')){
+               $(checkbox).attr('checked', false)
+           }else{
+               $(checkbox).prop('checked', 'checked');
+           }
+       });
+
+        $('input.checkbox-select').click(function(){
+            // really hacky way to do it:
+            this.checked = !this.checked;
+        });
+
+        $('select.category').click(function(e){
+            e.stopPropagation();
+            return false;
+        });
+
+
+        //******************
+    });
+</script>
+{% endblock %}

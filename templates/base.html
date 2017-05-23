@@ -25,6 +25,7 @@
             <li><a href="{% url 'distribution' %}">Time Distribution</a></li>
 	    {% if user.is_staff %}
             <li><a href="{% url 'planning_home' %}">Planning</a></li>
+            <li><a href="{% url 'rates_home' %}">Rates</a></li>
         {% endif %}
         </ul>
     </div>
@@ -45,29 +46,5 @@
 {% block js_body %}
 {% endblock %}
 
-
-<script>
-	$('#home_link').click(function(){
-			window.location.href = '../home/';
-	});
-	$('#time_entry_link').click(function(){
-			window.location.href = '../time_entries/';
-		});
-	$('#calendar_link').click(function(){
-			window.location.href = '../calendar/';
-		});
-	$('#vis_link').click(function(){
-			window.location.href = '../distribution/';
-		});
-	$('#org_link').click(function(){
-			window.location.href = '../org_chart/';
-		});
-
-	{% if role == "manager" %}
-	$('#manage_link').click(function(){
-			window.location.href = '../manage_programmers/';
-		});
-	{% endif %}
-</script>
 </body>
 </html>
