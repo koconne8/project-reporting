@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'management',
     'django_extensions',
-    'skillsmatrix.apps.SkillsmatrixConfig'
+    'skillsmatrix.apps.SkillsmatrixConfig',
+    # used on prod for CAS authentication
+    #'django-cas-client',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # used on prod for CAS authentication
+    #'cas.middleware.CASMiddleware',
 ]
 
 ROOT_URLCONF = 'pr.urls'
