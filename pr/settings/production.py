@@ -16,3 +16,15 @@ DATABASES = {
         'PORT': '5432'
     }
 }
+
+CAS_REDIRECT_URL = '/reports/home/'
+CAS_IGNORE_REFERER = True
+CAS_SERVER_URL = 'https://login.nd.edu/cas/login'
+CAS_AUTO_CREATE_USERS = False
+
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'cas.backends.CASBackend',
+)
+
