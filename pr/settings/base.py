@@ -40,10 +40,10 @@ INSTALLED_APPS = [
     'django_extensions',
     'skillsmatrix.apps.SkillsmatrixConfig',
     # used on prod for CAS authentication
-    #'django-cas-client',
+    'cas',
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # used on prod for CAS authentication
-    #'cas.middleware.CASMiddleware',
+    'cas.middleware.CASMiddleware',
 ]
 
 ROOT_URLCONF = 'pr.urls'
@@ -133,6 +133,9 @@ STATICFILES_DIRS = [
     'static',
 ]
 
+# actual login and logout urls (since we're in a sub-part of the site)
+LOGIN_URL = '/reports/accounts/login/'
+LOGOUT_URL = '/reports/accounts/logout/'
 
 # Custom field name that represents the log as categories:
 LOGGING_CATEGORY_NAME = 'Log As'
