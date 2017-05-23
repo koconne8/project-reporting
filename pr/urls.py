@@ -27,6 +27,7 @@ from management.distribution import distribution_home, get_entries
 from management.report_generation import report_generator_home, generate_external_report, \
     generate_csr_report, generate_internal_report, missing_hours
 from management.reports import weekly_report_form_url
+from management.rates import rates_home
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -79,6 +80,9 @@ urlpatterns = [
     url(r'^update_supervisor/$', update_supervisor, name='update_supervisor'),
     url(r'^remove_project_distribution_entry/$', remove_assignment, name='remove_assignment'),
     url(r'^add_developer/$', add_assignment, name='add_developer'),
+
+    # Adjustable Rates
+    url(r'^rates/$', rates_home, name='rates_home'),
 
     # Weekly Report Generator (callable via the following URL):
     url(r'^weekly_report/$', weekly_report_form_url, name='weekly_report'),

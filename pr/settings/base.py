@@ -128,3 +128,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     'static',
 ]
+
+
+# Custom field name that represents the log as categories:
+LOGGING_CATEGORY_NAME = 'Log As'
