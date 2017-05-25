@@ -1,5 +1,5 @@
 from django.db import connection
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 import datetime
 from pr.settings.base import LOGGING_CATEGORY_NAME
 
@@ -45,3 +45,81 @@ def rates_home(request):
 
     return render(request, 'rates.html', {'rates': rate_list, 'categories': category_list})
 
+
+def save_rate(request):
+    # connect to our database
+    cur = connection.cursor()
+
+    cur.execute("UPDATE charge_rates "
+                "SET category = %s, "
+                "cores_display = %s "
+                "WHERE charge_rate_id = %s;", [request.GET['category'], request.GET['cores_display'], int(request.GET['id'])])
+
+    return HttpResponse(200)
+
+
+def save_start_date(request):
+    ids = request.GET.getlist('ids[]')
+    id_list = []
+    for id in ids:
+        id_list.append(int(id))
+
+    # connect to our database
+    cur = connection.cursor()
+
+    cur.execute("UPDATE charge_rates "
+                "SET start_date = %s::date "
+                "WHERE charge_rate_id = ANY(%s);",
+                [request.GET['start_date'], id_list])
+
+    return HttpResponse(200)
+
+
+def save_end_date(request):
+    ids = request.GET.getlist('ids[]')
+    id_list = []
+    for id in ids:
+        id_list.append(int(id))
+
+    # connect to our database
+    cur = connection.cursor()
+
+    cur.execute("UPDATE charge_rates "
+                "SET end_date = %s::date "
+                "WHERE charge_rate_id = ANY(%s);",
+                [request.GET['end_date'], id_list])
+
+    return HttpResponse(200)
+
+
+def save_rates(request):
+    ids = request.GET.getlist('ids[]')
+    id_list = []
+    for id in ids:
+        id_list.append(int(id))
+
+    # connect to our database
+    cur = connection.cursor()
+
+    cur.execute("UPDATE charge_rates "
+                "SET rate = %s "
+                "WHERE charge_rate_id = ANY(%s);",
+                [request.GET['rate'], id_list])
+
+    return HttpResponse(200)
+
+
+def delete_rates(request):
+    ids = request.GET.getlist('ids[]')
+    id_list = []
+    for id in ids:
+        id_list.append(int(id))
+
+    # connect to our database
+    cur = connection.cursor()
+
+    cur.execute("DELETE FROM charge_rates "
+                "WHERE charge_rate_id = ANY(%s);",
+                [id_list])
+
+    return HttpResponse(200)

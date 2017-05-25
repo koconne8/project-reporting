@@ -295,7 +295,6 @@ def generate_internal_report(request):
                         " and center.name = 'Center for Research Computing'"
                         " and time_entries.project_id = %(project_id)s;" % {'project_id': project})
             hours = cur.fetchone()
-            print "Hours for project:", hours
             if len(hours) == 1 and hours[0] is None:
                 continue
 
@@ -369,7 +368,6 @@ def generate_internal_report(request):
             day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
 
             # loop through all time records, creating a new row of information to add
-            print "Time length for project", project, ":", len(times)
             records = []
             for record in times:
                 # grab the rate for the date we're working with, along with the cores display name
@@ -720,7 +718,6 @@ def generate_external_report(request):
             cur.execute('SELECT parent_id FROM projects WHERE id=%(project)s;' % {'project': project})
             parent_id = cur.fetchone()[0]
 
-            print parent_id
             found = False
             for parent in project_list:
                 # add exception for HPC parent project
