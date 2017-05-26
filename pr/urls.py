@@ -27,7 +27,7 @@ from management.distribution import distribution_home, get_entries
 from management.report_generation import report_generator_home, generate_external_report, \
     generate_csr_report, generate_internal_report, missing_hours
 from management.reports import weekly_report_form_url
-from management.rates import rates_home, save_rate, save_start_date, save_end_date, save_rates, delete_rates
+from management.rates import rates_home, save_rate, save_start_date, save_end_date, save_rates, delete_rates, add_rates
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -88,6 +88,7 @@ urlpatterns = [
     url(r'^save_end_date/$', save_end_date, name='save_end_date'),
     url(r'^save_rates/$', save_rates, name='save_rates'),
     url(r'^delete_rates/$', delete_rates, name='delete_rates'),
+    url(r'^add_rates/$', add_rates, name='add_rates'),
 
     # Weekly Report Generator (callable via the following URL):
     url(r'^weekly_report/$', weekly_report_form_url, name='weekly_report'),

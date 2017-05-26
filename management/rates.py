@@ -43,7 +43,17 @@ def rates_home(request):
         if category[2:] != '':
             category_list.append(category[2:])
 
-    return render(request, 'rates.html', {'rates': rate_list, 'categories': category_list})
+
+    # compute next fiscal year ranges
+    add_year = 0
+    if datetime.datetime.today().month >= 7:
+        add_year = 1
+    next_fiscal_start = datetime.datetime(datetime.datetime.today().year + add_year, 7, 1)
+    next_fiscal_end = datetime.datetime(datetime.datetime.today().year + add_year + 1, 6, 30)
+
+    return render(request, 'rates.html', {'rates': rate_list, 'categories': category_list,
+                                          'next_fiscal_start': next_fiscal_start,
+                                          'next_fiscal_end': next_fiscal_end})
 
 
 def save_rate(request):
@@ -121,5 +131,33 @@ def delete_rates(request):
     cur.execute("DELETE FROM charge_rates "
                 "WHERE charge_rate_id = ANY(%s);",
                 [id_list])
+
+    return HttpResponse(200)
+
+
+def add_rates(request):
+    # connect to our database
+    cur = connection.cursor()
+
+    # get a list of categories that this could be for
+    cur.execute("select possible_values from custom_fields "
+                "where name = %s;", [LOGGING_CATEGORY_NAME])
+
+    categories = cur.fetchall()
+    category_list = []
+    for category in categories[0][0].split('\n')[1:]:
+        if category[2:] != '':
+            category_list.append(category[2:])
+
+    for category in category_list:
+        cur.execute("INSERT INTO charge_rates "
+                    "(start_date, end_date, category, rate, cores_display) "
+                    "VALUES "
+                    "(%s, %s, %s, %s, %s);", [request.GET['start_date'],
+                                              request.GET['end_date'],
+                                              category,
+                                              request.GET['rate'],
+                                              category
+                                              ])
 
     return HttpResponse(200)
