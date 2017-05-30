@@ -28,6 +28,7 @@ from management.report_generation import report_generator_home, generate_externa
     generate_csr_report, generate_internal_report, missing_hours
 from management.reports import weekly_report_form_url
 from management.rates import rates_home, save_rate, save_start_date, save_end_date, save_rates, delete_rates, add_rates
+from management.auth import login_page, logout_request
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -96,5 +97,10 @@ urlpatterns = [
     # Used if on production for CAS authentication
     #url(r'^accounts/login/$', 'cas.views.login', name='login'),
     #url(r'^accounts/logout/$', 'cas.views.logout', name='logout'),
+
+    # OR you can use these login pages:
+    url(r'^accounts/login/$', login_page, name='login'),
+    url(r'^accounts/logout/$', logout_request, name='logout'),
+
 
 ]
