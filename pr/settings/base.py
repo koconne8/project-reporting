@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'management',
     'django_extensions',
-    'skillsmatrix.apps.SkillsmatrixConfig',
+    #'skillsmatrix.apps.SkillsmatrixConfig',
     # used on prod for CAS authentication
-    'cas',
+    'mama_cas',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -52,8 +52,10 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # used on prod for CAS authentication
-    'cas.middleware.CASMiddleware',
+    #'cas.middleware.CASMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'pr.urls'
 
@@ -89,7 +91,6 @@ DATABASES = {
         'PORT': '5432'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -132,6 +133,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     'static',
 ]
+
+STATIC_ROOT = '/var/www/'
 
 # actual login and logout urls (since we're in a sub-part of the site)
 LOGIN_URL = '/reports/accounts/login/'
