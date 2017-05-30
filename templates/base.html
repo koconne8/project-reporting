@@ -26,6 +26,7 @@
 	    {% if user.is_staff %}
             <li><a href="{% url 'planning_home' %}">Planning</a></li>
             <li><a href="{% url 'rates_home' %}">Rates</a></li>
+            <li><a href="{% url 'report_generator' %}">CORES Report</a></li>
         {% endif %}
         </ul>
     </div>
