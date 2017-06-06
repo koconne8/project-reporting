@@ -35,7 +35,7 @@ def rates_home(request):
 
     # get a list of categories that this could be for
     cur.execute("select possible_values from custom_fields "
-                "where name = %s;", [LOGGING_CATEGORY_NAME])
+                "where lower(name) = lower(%s);", [LOGGING_CATEGORY_NAME])
 
     categories = cur.fetchall()
     category_list = []
@@ -141,7 +141,7 @@ def add_rates(request):
 
     # get a list of categories that this could be for
     cur.execute("select possible_values from custom_fields "
-                "where name = %s;", [LOGGING_CATEGORY_NAME])
+                "where lower(name) = lower(%s);", [LOGGING_CATEGORY_NAME])
 
     categories = cur.fetchall()
     category_list = []
