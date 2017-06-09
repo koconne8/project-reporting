@@ -161,7 +161,7 @@ def get_entries_home(request):
         activity_list.append(new_act)
 
     # get a list of "log as" options
-    cur.execute("SELECT possible_values FROM custom_fields WHERE name = 'Log As';")
+    cur.execute("SELECT possible_values FROM custom_fields WHERE lower(name) = lower('Log As');")
     logas = cur.fetchall()
     # loop through, constructing a dictionary
     logas = logas[0][0].split('\n')[1:-1]
