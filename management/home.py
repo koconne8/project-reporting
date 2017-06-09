@@ -172,12 +172,18 @@ def get_entries_home(request):
         logas_list.append(new_logas)
 
     # get a list of users who have time logged for this month/year
+    # cur.execute(
+    #     "SELECT firstname, lastname, login, max(CASE WHEN (time_entries.tmonth = %(month)s "
+    #     "and time_entries.tyear = %(year)s) THEN 2 ELSE 1 end) AS t FROM users "
+    #     "INNER JOIN time_entries ON time_entries.user_id = users.id "
+    #     "GROUP BY firstname, lastname, login "
+    #     "ORDER BY t DESC, firstname, lastname;" % {
+    #         'month': month, 'year': year})
+
+    # get a list of users who have time logged for this month/year
     cur.execute(
-        "SELECT firstname, lastname, login, max(CASE WHEN (time_entries.tmonth = %(month)s "
-        "and time_entries.tyear = %(year)s) THEN 2 ELSE 1 end) AS t FROM users "
-        "INNER JOIN time_entries ON time_entries.user_id = users.id "
-        "GROUP BY firstname, lastname, login "
-        "ORDER BY t DESC, firstname, lastname;" % {
+        "SELECT firstname, lastname, login FROM users "
+        "ORDER BY login DESC, firstname, lastname;" % {
             'month': month, 'year': year})
     users = cur.fetchall()
     # loop through the users, constructing a dictionary
