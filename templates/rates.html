@@ -68,7 +68,36 @@
             <br /><br />
             <button type="button" id="delete_button" class="btn btn-danger">DELETE SELECTED</button>
             <hr />
+
+
+
+             <br />
+            <h3>Add Single Category</h3>
+            <hr />
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Start Date:</label>
+                <input type="date" id="single_start_date" value="{{ next_fiscal_start|date:"Y-m-d" }}" class="form-control" />
+            </div>
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>End Date:</label>
+                <input type="date" id="single_end_date" value="{{ next_fiscal_end|date:"Y-m-d" }}" class="form-control" />
+            </div>
             <br /><br />
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Category:</label>
+                <select class="form-control" id="single_category">{% for category in categories %}
+                        <option value="{{ category }}" {% if category == rate.category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}</select>
+            </div>
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Rate:</label>
+                <input type="text" placeholder="$" id="single_rate" class="form-control" />
+            </div>
+            <br /><br />
+            <button type="button" class="btn btn-success add-single">Add New Rate</button>
+            <hr />
+
+            <br />
             <h3>Add New Fiscal Year</h3>
             <hr />
             <div class="input-group" style="display: inline-block; width: 50%;">
@@ -255,6 +284,21 @@
             $.ajax({
                 url: '{% url 'add_rates' %}',
                 data: {start_date: $('#fiscal_start_date').val(), end_date: $('#fiscal_end_date').val(), rate: $('#fiscal_rate').val()},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                }
+            })
+        });
+
+
+        //****************** ADD SINGLE CATEGORY BUTTON ******//
+        $('.add-single').click(function(){
+            $.ajax({
+                url: '{% url 'add_single' %}',
+                data: {start_date: $('#single_start_date').val(), end_date: $('#single_end_date').val(), category: $('#single_category').val(), rate: $('#single_rate').val()},
                 success: function(response){
                     if(response == 200){
                         alert("Saved!");

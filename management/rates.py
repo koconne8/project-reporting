@@ -135,6 +135,25 @@ def delete_rates(request):
     return HttpResponse(200)
 
 
+def add_single_category(request):
+    # connect to our database
+    cur = connection.cursor()
+
+    # get the name of the category selected
+    category = request.GET['category']
+
+    cur.execute("INSERT INTO charge_rates "
+                "(start_date, end_date, category, rate, cores_display) "
+                "VALUES "
+                "(%s, %s, %s, %s, %s);", [request.GET['start_date'],
+                                          request.GET['end_date'],
+                                          category,
+                                          request.GET['rate'],
+                                          category
+                                          ])
+
+    return HttpResponse(200)
+
 def add_rates(request):
     # connect to our database
     cur = connection.cursor()
