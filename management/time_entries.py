@@ -38,6 +38,14 @@ def get_date_range(request):
         new_month['name'] = calendar.month_name[month[0]]
         month_list.append(new_month)
 
+
+    # if this is empty...give it SOMETHING...
+    if len(month_list) == 0:
+        month_list.append({'number': datetime.datetime.today().month, 'name': calendar.month_name[datetime.datetime.today().month]})
+
+    if len(year_list) == 0:
+        year_list.append({'year': datetime.datetime.today().year})
+
     context = {'months': month_list, 'years': year_list}
     return HttpResponse(json.dumps(context))
 

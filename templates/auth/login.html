@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 col-lg-offset-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Login
+            </div>
+            <div class="panel-body">
+                <form action="{% url 'login' %}" method="POST">
+                    {% csrf_token %}
+                    {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+                    <input type="text" class="form-control" placeholder="Username" name="username" /><br />
+                    <input type="password" class="form-control" placeholder="Password" name="password" /><br>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

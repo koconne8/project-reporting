@@ -6,7 +6,7 @@
     <link href='/static/css/visualize.css' rel="stylesheet" type="text/css" />
     <link rel='icon' type="image/ico" href="/static/img/report.ico" />
     <link rel="shortcut icon" href="/static/img/report.ico" />
-    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <link href="/static/css/jquery-ui.css" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
@@ -20,6 +20,7 @@
                 <th>Category</th>
                 <th>CORES Display</th>
                 <th style="text-align: right;">Rate $</th>
+                <th style="text-align: right;">Save</th>
 {#                <th>Internal</th>#}
             </thead>
 
@@ -34,9 +35,10 @@
                         {% endfor %}
                     </select>
                         </td>
-                    <td style="width: 20%;"><input type="text" class="form-control" value="{{ rate.cores_display }}" /></td>
+                    <td style="width: 20%;"><input type="text" class="form-control cores-display" value="{{ rate.cores_display }}" /></td>
                     <td style="width: 20%; text-align: right;">${{ rate.rate }}</td>
 {#                    <td>{% if rate.internal %}Internal{% else %}<span style="font-weight: bold">External</span>{% endif %}</td>#}
+                    <td style="text-align: right;"><button type="button" class="btn btn-success save-row">SAVE</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -48,28 +50,72 @@
             <hr />
             <div class="input-group" style="display: inline-block; width: 50%;">
                 <label>Start Date:</label>
-                <input type="date" class="form-control" />
+                <input type="date" id="start_date" class="form-control" />
             </div>
-            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <button type="button" id="start_date_set" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
             <br /><br />
             <div class="input-group" style="display: inline-block; width: 50%;">
                 <label>End Date:</label>
-                <input type="date" class="form-control" />
+                <input type="date" id="end_date" class="form-control" />
             </div>
-            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <button type="button" id="end_date_set" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
             <br /><br />
             <div class="input-group" style="display: inline-block; width: 50%;">
                 <label>Rate:</label>
-                <input type="text" placeholder="$" class="form-control" />
+                <input type="text" placeholder="$" id="rate" class="form-control" />
             </div>
-            <button type="button" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
+            <button type="button" id="rate_set" class="btn btn-success btn-sm" style="vertical-align: bottom; position: relative; bottom: 3px;">SET</button>
             <br /><br />
-            <button type="button" class="btn btn-danger">DELETE SELECTED</button>
-            <hr />
-            <br /><br />
-            <h3>Add New Fiscal Year</h3>
+            <button type="button" id="delete_button" class="btn btn-danger">DELETE SELECTED</button>
             <hr />
 
+
+
+             <br />
+            <h3>Add Single Category</h3>
+            <hr />
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Start Date:</label>
+                <input type="date" id="single_start_date" value="{{ next_fiscal_start|date:"Y-m-d" }}" class="form-control" />
+            </div>
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>End Date:</label>
+                <input type="date" id="single_end_date" value="{{ next_fiscal_end|date:"Y-m-d" }}" class="form-control" />
+            </div>
+            <br /><br />
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Category:</label>
+                <select class="form-control" id="single_category">{% for category in categories %}
+                        <option value="{{ category }}" {% if category == rate.category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}</select>
+            </div>
+            <div class="input-group" style="display: inline-block; width: 49%;">
+                <label>Rate:</label>
+                <input type="text" placeholder="$" id="single_rate" class="form-control" />
+            </div>
+            <br /><br />
+            <button type="button" class="btn btn-success add-single">Add New Rate</button>
+            <hr />
+
+            <br />
+            <h3>Add New Fiscal Year</h3>
+            <hr />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>Start Date:</label>
+                <input type="date" id="fiscal_start_date" value="{{ next_fiscal_start|date:"Y-m-d" }}" class="form-control" />
+            </div>
+            <br /><br />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>End Date:</label>
+                <input type="date" id="fiscal_end_date" value="{{ next_fiscal_end|date:"Y-m-d" }}" class="form-control" />
+            </div>
+            <br /><br />
+            <div class="input-group" style="display: inline-block; width: 50%;">
+                <label>Rate:</label>
+                <input type="text" placeholder="$" id="fiscal_rate" class="form-control" />
+            </div>
+            <br /><br />
+            <button type="button" class="btn btn-success add-year">Add New Rates</button>
         </div>
     </div>
 {% endblock %}
@@ -77,6 +123,8 @@
 {% block js_body %}
 <script>
     $(document).ready(function(){
+
+        // row clicking
        $('td').click(function(){
            var checkbox = $(this).parent().find('input.checkbox-select')[0];
            if($(checkbox).is(':checked')){
@@ -96,8 +144,169 @@
             return false;
         });
 
+        //****************** SET BUTTONS *****************//
+        // start date
+        $('#start_date_set').click(function(){
+           // check to see if we have any selected
+            if($('.checkbox-select:checked').length == 0){
+                alert("Select at least one row first!");
 
-        //******************
+            }
+            // get a list of rows to do
+            var id_list = [];
+            $('.checkbox-select:checked').each(function(){
+                id_list.push($(this).parent().parent().attr('data-id'));
+            });
+
+            $.ajax({
+                url: '{% url 'save_start_date' %}',
+                data: {start_date: $('#start_date').val(), ids: id_list},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                },
+                error: function(){
+                    alert("Failed to save.");
+                }
+            })
+        });
+
+        // end date
+        $('#end_date_set').click(function(){
+           // check to see if we have any selected
+            if($('.checkbox-select:checked').length == 0){
+                alert("Select at least one row first!");
+
+            }
+            // get a list of rows to do
+            var id_list = [];
+            $('.checkbox-select:checked').each(function(){
+                id_list.push($(this).parent().parent().attr('data-id'));
+            });
+
+            $.ajax({
+                url: '{% url 'save_end_date' %}',
+                data: {end_date: $('#end_date').val(), ids: id_list},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                },
+                error: function(){
+                    alert("Failed to save.");
+                }
+            })
+        });
+
+         // rate
+        $('#rate_set').click(function(){
+           // check to see if we have any selected
+            if($('.checkbox-select:checked').length == 0){
+                alert("Select at least one row first!");
+
+            }
+            // get a list of rows to do
+            var id_list = [];
+            $('.checkbox-select:checked').each(function(){
+                id_list.push($(this).parent().parent().attr('data-id'));
+            });
+
+            $.ajax({
+                url: '{% url 'save_rates' %}',
+                data: {rate: $('#rate').val(), ids: id_list},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                },
+                error: function(){
+                    alert("Failed to save.");
+                }
+            })
+        });
+
+         // delete
+        $('#delete_button').click(function(){
+           // check to see if we have any selected
+            if($('.checkbox-select:checked').length == 0){
+                alert("Select at least one row first!");
+
+            }
+            // get a list of rows to do
+            var id_list = [];
+            $('.checkbox-select:checked').each(function(){
+                id_list.push($(this).parent().parent().attr('data-id'));
+            });
+
+            if(!confirm("Are you sure you want to delete these "+id_list.length+" rates?")){
+                return;
+            }
+
+            $.ajax({
+                url: '{% url 'delete_rates' %}',
+                data: {ids: id_list},
+                success: function(response){
+                    if(response == 200){
+                        alert("Deleted!");
+                        location.reload();
+                    }
+                },
+                error: function(){
+                    alert("Failed to delete.");
+                }
+            })
+        });
+
+        //****************** SAVE BUTTON *****************//
+        $('.save-row').click(function(){
+           var id = $(this).parent().parent().attr('data-id');
+            var category = $(this).parent().parent().find('.category')[0].value;
+            var cores_display = $(this).parent().parent().find('.cores-display')[0].value;
+
+            $.ajax({
+                url: '{% url 'save_rate' %}',
+                data: {category: category, cores_display: cores_display, id: id},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                    }
+                }
+
+            })
+        });
+
+        //****************** ADD FISCAL YEAR BUTTON ******//
+        $('.add-year').click(function(){
+            $.ajax({
+                url: '{% url 'add_rates' %}',
+                data: {start_date: $('#fiscal_start_date').val(), end_date: $('#fiscal_end_date').val(), rate: $('#fiscal_rate').val()},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                }
+            })
+        });
+
+
+        //****************** ADD SINGLE CATEGORY BUTTON ******//
+        $('.add-single').click(function(){
+            $.ajax({
+                url: '{% url 'add_single' %}',
+                data: {start_date: $('#single_start_date').val(), end_date: $('#single_end_date').val(), category: $('#single_category').val(), rate: $('#single_rate').val()},
+                success: function(response){
+                    if(response == 200){
+                        alert("Saved!");
+                        location.reload();
+                    }
+                }
+            })
+        })
     });
 </script>
 {% endblock %}

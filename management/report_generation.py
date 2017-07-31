@@ -103,15 +103,12 @@ def report_generator_home(request):
 
     # gather a list of all projects
     cur.execute(
-        "SELECT projects.id, projects.name FROM projects WHERE projects.id IN "
-        "(SELECT customized_id FROM custom_values "
-        "  WHERE customized_type='Project' "
-        "  AND custom_field_id = 11 AND value = '1')"
-        "AND projects.id IN "
-        "(SELECT customized_id FROM custom_values "
-        "   WHERE customized_type='Project' "
-        "    AND custom_field_id = 17 AND value = '1')"
-        "ORDER BY projects.name;")
+        "SELECT projects.id, projects.name "
+        "FROM projects "
+        "INNER JOIN custom_values ON customized_id = projects.id "
+        "INNER JOIN custom_fields ON custom_fields.id = custom_values.custom_field_id "
+        "WHERE custom_fields.name = 'CORES Ready' "
+        "AND custom_values.value = '1';")
 
     dbprojects = cur.fetchall()
 
@@ -122,22 +119,26 @@ def report_generator_home(request):
     for project in dbprojects:
         # get the fopal for this project
         cur.execute(
-            "SELECT value FROM custom_values WHERE customized_id = %(project)s "
-            "AND customized_type='Project' AND custom_field_id = 4" % {
+            "SELECT value FROM custom_values "
+            "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+            "WHERE customized_id = %(project)s and customized_type='Project' AND custom_fields.name = 'FOPAL';" % {
                 'project': project[0]})
         fopal = cur.fetchone()[0]
 
         # get the financially responsible PI (if any)
         cur.execute(
-            'SELECT value FROM custom_values WHERE custom_field_id = 10 '
-            'AND customized_id = %(project)s AND customized_type = \'Project\';' % {
+            "SELECT value FROM custom_values "
+            "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+            "WHERE customized_id = %(project)s and customized_type='Project' "
+            "AND lower(custom_fields.name) = lower('Financial PI');" % {
                 'project': project[0]})
         fpi = cur.fetchall()
         if len(fpi) >= 1:
             try:
                 fpi = fpi[0][0]
-                sfpi = fpi.split(' ')
-                fpi = sfpi[1] + ', ' + sfpi[0]
+                if len(fpi.split(' ')) > 1:
+                    sfpi = fpi.split(' ')
+                    fpi = sfpi[1] + ', ' + sfpi[0]
             except:
                 fpi = ''
         else:
@@ -151,7 +152,12 @@ def report_generator_home(request):
     for project_one in projects:
         project_id = project_one.id
         required_list += str(project_id) + ','
-    required_list = required_list[:-1] + ')'
+    if len(projects) > 0:
+        required_list = required_list[:-1]
+    else:
+        required_list += 'NULL'
+    required_list += ')'
+    print required_list
 
     # gather a summation of all un-accounted hours that are not part of any of the projects we have listed
     today = datetime.date.today()
@@ -290,12 +296,10 @@ def generate_internal_report(request):
             cur.execute("select sum(hours) from time_entries "
                         " inner join custom_values ON custom_values.customized_id = time_entries.id "
                         " inner join charge_rates ON custom_values.value = charge_rates.category"
-                        " inner join center ON charge_rates.center = center.id"
                         " where custom_values.customized_type = 'TimeEntry'"
-                        " and center.name = 'Center for Research Computing'"
                         " and time_entries.project_id = %(project_id)s;" % {'project_id': project})
             hours = cur.fetchone()
-            print "Hours for project:", hours
+            print "HOURS for", project, ":", hours
             if len(hours) == 1 and hours[0] is None:
                 continue
 
@@ -304,9 +308,10 @@ def generate_internal_report(request):
 
             # get the project FOPAL
             cur.execute(
-                'SELECT value FROM custom_values WHERE custom_field_id = 4 '
-                'AND customized_id = %(project)s AND customized_type = \'Project\';' % {
-                    'project': project})
+                "SELECT value FROM custom_values "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "WHERE customized_id = %(project)s and customized_type='Project' AND custom_fields.name = 'FOPAL';" % {
+                    'project': project[0]})
             fopal = cur.fetchall()
             if len(fopal) >= 1:
                 fopal = fopal[0][0]
@@ -315,9 +320,11 @@ def generate_internal_report(request):
 
             # get the financially responsible PI (if any)
             cur.execute(
-                'SELECT value FROM custom_values WHERE custom_field_id = 10 '
-                'AND customized_id = %(project)s AND customized_type = \'Project\';' % {
-                    'project': project})
+                "SELECT value FROM custom_values "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "WHERE customized_id = %(project)s and customized_type='Project' "
+                "AND lower(custom_fields.name) = lower('Financial PI');" % {
+                    'project': project[0]})
             fpi = cur.fetchall()
             if len(fpi) >= 1:
                 try:
@@ -331,9 +338,11 @@ def generate_internal_report(request):
 
             # get the PI list
             cur.execute(
-                'SELECT value FROM custom_values WHERE custom_field_id = 6 '
-                'AND customized_id = %(project)s AND customized_type = \'Project\';' % {
-                    'project': project})
+                "SELECT value FROM custom_values "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "WHERE customized_id = %(project)s and customized_type='Project' "
+                "AND lower(custom_fields.name) = lower('PI');" % {
+                    'project': project[0]})
             pi = cur.fetchall()
             if len(pi) >= 1:
                 pi = pi[0][0]
@@ -342,21 +351,21 @@ def generate_internal_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                'SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, '
-                'time_entries.spent_on FROM time_entries INNER JOIN users ON time_entries.user_id=users.id '
-                'INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations '
-                'ON enumerations.id=time_entries.activity_id INNER JOIN custom_values '
-                'ON custom_values.customized_id = time_entries.id WHERE (time_entries.project_id = '
-                'ANY(childlist(%(project_id)s)) OR time_entries.project_id = %(project_id)s) '
-                'AND enumerations.name <> \'  Support (non-billable) \' AND custom_values.value '
-                'NOT LIKE \'%%(external)%%\' AND tmonth = %(month)s AND tyear = %(year)s '
-                'AND time_entries.project_id IN %(list)s AND custom_values.value NOT LIKE \'%%Statistical%%\' '
-                'GROUP BY users.lastname, users.firstname, users.login, custom_values.value, time_entries.spent_on '
-                'ORDER BY users.lastname, users.firstname;' % {
-                    'project_id': project, 'month': request.GET['month'], 'year': request.GET['year'],
-                    'list': required_list})
+                "select sum(hours), users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
+                "from time_entries "
+                "inner join users on users.id = time_entries.user_id "
+                "inner join custom_values ON custom_values.customized_id = time_entries.id "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "inner join projects on projects.id = time_entries.project_id "
+                "inner join enumerations on enumerations.id = time_entries.activity_id "
+                "where (time_entries.project_id = %(project_id)s or time_entries.project_id = any(childlist(%(project_id)s))) "
+                "and lower(custom_fields.name) = lower('Log as') "
+                "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
+                "and lower(enumerations.name) not like '%%non%%billable' "
+                "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
+                "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
             times = cur.fetchall()
-
+            print times
             # format of the "times":
             # times[0] = summation of hours
             # times[1] = last name
@@ -369,7 +378,6 @@ def generate_internal_report(request):
             day = calendar.monthrange(int(request.GET['year']), int(request.GET['month']))[1]
 
             # loop through all time records, creating a new row of information to add
-            print "Time length for project", project, ":", len(times)
             records = []
             for record in times:
                 # grab the rate for the date we're working with, along with the cores display name
@@ -377,14 +385,20 @@ def generate_internal_report(request):
                 if 'external' in record[3]:
                     internal = 'FALSE'
                 query = "SELECT rate, cores_display FROM charge_rates WHERE '%(date)s'::date >= start_date " \
-                        "AND '%(date)s'::date <= end_date AND category = '%(category)s' " \
-                        "AND internal = %(internal)s;" % {
-                            'date': record[5], 'category': record[3], 'internal': internal}
+                        "AND '%(date)s'::date <= end_date AND category = '%(category)s' " % {
+                            'date': record[5], 'category': record[3]}
                 try:
                     cur.execute(query)
                     rate_info = cur.fetchone()
-                    rate = rate_info[0]
-                    cores_display = rate_info[1]
+                    print "Record:", record,
+                    print "Rate:", rate_info
+                    if rate_info is None:
+                        # then assume rate is 0
+                        rate = 0
+                        cores_display = record[3]
+                    else:
+                        rate = rate_info[0]
+                        cores_display = rate_info[1]
 
                 except:
                     return HttpResponse(
@@ -720,7 +734,6 @@ def generate_external_report(request):
             cur.execute('SELECT parent_id FROM projects WHERE id=%(project)s;' % {'project': project})
             parent_id = cur.fetchone()[0]
 
-            print parent_id
             found = False
             for parent in project_list:
                 # add exception for HPC parent project

@@ -161,7 +161,7 @@ def get_entries_home(request):
         activity_list.append(new_act)
 
     # get a list of "log as" options
-    cur.execute("SELECT possible_values FROM custom_fields WHERE name = 'Log As';")
+    cur.execute("SELECT possible_values FROM custom_fields WHERE lower(name) = lower('Log As');")
     logas = cur.fetchall()
     # loop through, constructing a dictionary
     logas = logas[0][0].split('\n')[1:-1]
@@ -172,12 +172,18 @@ def get_entries_home(request):
         logas_list.append(new_logas)
 
     # get a list of users who have time logged for this month/year
+    # cur.execute(
+    #     "SELECT firstname, lastname, login, max(CASE WHEN (time_entries.tmonth = %(month)s "
+    #     "and time_entries.tyear = %(year)s) THEN 2 ELSE 1 end) AS t FROM users "
+    #     "INNER JOIN time_entries ON time_entries.user_id = users.id "
+    #     "GROUP BY firstname, lastname, login "
+    #     "ORDER BY t DESC, firstname, lastname;" % {
+    #         'month': month, 'year': year})
+
+    # get a list of users who have time logged for this month/year
     cur.execute(
-        "SELECT firstname, lastname, login, max(CASE WHEN (time_entries.tmonth = %(month)s "
-        "and time_entries.tyear = %(year)s) THEN 2 ELSE 1 end) AS t FROM users "
-        "INNER JOIN time_entries ON time_entries.user_id = users.id "
-        "GROUP BY firstname, lastname, login "
-        "ORDER BY t DESC, firstname, lastname;" % {
+        "SELECT firstname, lastname, login FROM users "
+        "ORDER BY login DESC, firstname, lastname;" % {
             'month': month, 'year': year})
     users = cur.fetchall()
     # loop through the users, constructing a dictionary
