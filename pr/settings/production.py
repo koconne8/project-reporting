@@ -1,14 +1,14 @@
 from pr.settings.base import *
 
-SECRET_KEY = ''
-DEBUG = False
+SECRET_KEY = 'vhy%=dl-f4g=q==0sfn-nzmquk=@fza%#y=+r98r3meflu4zg2'
+DEBUG = True
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['redmine.crc.nd.edu']
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'redmine',
         'USER': 'redmine',
         'PASSWORD': 'redminepass',
