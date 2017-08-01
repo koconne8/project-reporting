@@ -363,7 +363,7 @@ def generate_internal_report(request):
                 "where (time_entries.project_id = %(project_id)s or time_entries.project_id = any(childlist(%(project_id)s))) "
                 "and lower(custom_fields.name) = lower('Log as') "
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
-                "and lower(enumerations.name) not like '%%non%%billable' "
+                "and lower(enumerations.name) not like '%%non%%billable%%' "
                 "and charge_rates.center = 1 "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
 
@@ -579,7 +579,7 @@ def generate_csr_report(request):
                 "where (time_entries.project_id = %(project_id)s or time_entries.project_id = any(childlist(%(project_id)s))) "
                 "and lower(custom_fields.name) = lower('Log as') "
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
-                "and lower(enumerations.name) not like '%%non%%billable' "
+                "and lower(enumerations.name) not like '%%non%%billable%%' "
                 "and charge_rates.center = 2 "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'],
                                               'year': request.GET['year']})
