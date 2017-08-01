@@ -352,7 +352,7 @@ def generate_internal_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                "select hours, users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
+                "select distinct(time_entries.id), hours, users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
                 "from time_entries "
                 "inner join users on users.id = time_entries.user_id "
                 "inner join custom_values ON custom_values.customized_id = time_entries.id "
@@ -364,13 +364,11 @@ def generate_internal_report(request):
                 "and lower(custom_fields.name) = lower('Log as') "
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
                 "and lower(enumerations.name) not like '%%non%%billable' "
-                "and charge_rates.center = 1"
-                " group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on, time_entries.hours "
+                "and charge_rates.center = 1 "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
 
             times = cur.fetchall()
 
-            print "TIMES:", len(times)
             # format of the "times":
             # times[0] = summation of hours
             # times[1] = last name
@@ -385,21 +383,20 @@ def generate_internal_report(request):
             # loop through all time records, creating a new row of information to add
             records = []
             for record in times:
-                print "RECORD:", record
                 # grab the rate for the date we're working with, along with the cores display name
                 internal = 'TRUE'
-                if 'external' in record[3]:
+                if 'external' in record[4]:
                     internal = 'FALSE'
                 query = "SELECT rate, cores_display FROM charge_rates WHERE '%(date)s'::date >= start_date " \
                         "AND '%(date)s'::date <= end_date AND category = '%(category)s' " % {
-                            'date': record[5], 'category': record[3]}
+                            'date': record[6], 'category': record[4]}
                 try:
                     cur.execute(query)
                     rate_info = cur.fetchone()
                     if rate_info is None:
                         # then assume rate is 0
                         rate = 0
-                        cores_display = record[3]
+                        cores_display = record[4]
                     else:
                         rate = rate_info[0]
                         cores_display = rate_info[1]
@@ -415,18 +412,18 @@ def generate_internal_report(request):
                     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
                                                                                                 2:])  # Transaction Date
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
-                new_record['hours'] = record[0]  # Quantity (Hours)
+                new_record['hours'] = record[1]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
                 new_record['rate'] = str(rate)  # Hourly rate
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
-                new_record['secondary_comments'] = '"' + record[2] + ' ' + record[
-                    1] + '"'  # Secondary comments (always empty?)
+                new_record['secondary_comments'] = '"' + record[3] + ' ' + record[
+                    2] + '"'  # Secondary comments (always empty?)
                 new_record['fpi'] = '"' + fpi + '"'  # Financially responsible PI (formatted as: "Last,First MI")
                 new_record['pi'] = (pi)  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
-                new_record['login'] = '"' + record[4] + '"'  # Line Item Assistant (netID of the user)
-                new_record['comment'] = '"' + record[2] + ' ' + record[1] + '"'  # Line Item Comment
+                new_record['login'] = '"' + record[5] + '"'  # Line Item Assistant (netID of the user)
+                new_record['comment'] = '"' + record[3] + ' ' + record[2] + '"'  # Line Item Comment
 
                 # do we already have this record?
                 added = False
@@ -571,7 +568,7 @@ def generate_csr_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                "select sum(hours), users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
+                "select distinct(time_entries.id), hours, users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
                 "from time_entries "
                 "inner join users on users.id = time_entries.user_id "
                 "inner join custom_values ON custom_values.customized_id = time_entries.id "
@@ -583,8 +580,7 @@ def generate_csr_report(request):
                 "and lower(custom_fields.name) = lower('Log as') "
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
                 "and lower(enumerations.name) not like '%%non%%billable' "
-                "and charge_rates.center = 2"
-                "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
+                "and charge_rates.center = 2 "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'],
                                               'year': request.GET['year']})
 
@@ -606,12 +602,12 @@ def generate_csr_report(request):
             for record in times:
                 # grab the rate for the date we're working with, along with the cores display name
                 internal = 'TRUE'
-                if 'external' in record[3]:
+                if 'external' in record[4]:
                     internal = 'FALSE'
                 query = "SELECT rate, cores_display FROM charge_rates WHERE '%(date)s'::date >= start_date " \
                         "AND '%(date)s'::date <= end_date AND category = '%(category)s' " \
                         "AND internal = %(internal)s;" % {
-                            'date': record[5], 'category': record[3], 'internal': internal}
+                            'date': record[6], 'category': record[4], 'internal': internal}
                 try:
                     cur.execute(query)
                     rate_info = cur.fetchone()
@@ -629,18 +625,18 @@ def generate_csr_report(request):
                     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
                                                                                                 2:])  # Transaction Date
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
-                new_record['hours'] = record[0]  # Quantity (Hours)
+                new_record['hours'] = record[1]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
                 new_record['rate'] = str(rate)  # Hourly rate
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
-                new_record['secondary_comments'] = '"' + record[2] + ' ' + record[
-                    1] + '"'  # Secondary comments (always empty?)
+                new_record['secondary_comments'] = '"' + record[3] + ' ' + record[
+                    2] + '"'  # Secondary comments (always empty?)
                 new_record['fpi'] = '"' + fpi + '"'  # Financially responsible PI (formatted as: "Last,First MI")
                 new_record['pi'] = (pi)  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
-                new_record['login'] = '"' + record[4] + '"'  # Line Item Assistant (netID of the user)
-                new_record['comment'] = '"' + record[2] + ' ' + record[1] + '"'  # Line Item Comment
+                new_record['login'] = '"' + record[5] + '"'  # Line Item Assistant (netID of the user)
+                new_record['comment'] = '"' + record[3] + ' ' + record[2] + '"'  # Line Item Comment
 
                 # do we already have this record?
                 added = False
