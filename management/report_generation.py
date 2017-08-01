@@ -296,7 +296,9 @@ def generate_internal_report(request):
             cur.execute("select sum(hours) from time_entries "
                         " inner join custom_values ON custom_values.customized_id = time_entries.id "
                         " inner join charge_rates ON custom_values.value = charge_rates.category"
+                        " inner join center ON charge_rates.center = center.id"
                         " where custom_values.customized_type = 'TimeEntry'"
+                        " and center.name = 'Center for Research Computing' "
                         " and time_entries.project_id = %(project_id)s;" % {'project_id': project})
             hours = cur.fetchone()
             if len(hours) == 1 and hours[0] is None:
