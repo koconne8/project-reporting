@@ -58,15 +58,6 @@ def get_entries_home(request):
         "INNER JOIN enumerations ON enumerations.id = time_entries.activity_id WHERE time_entries.tyear = %(year)s "
         "AND time_entries.tmonth = %(month)s AND users.login = '%(user)s' ORDER BY %(order)s;" % {
             'month': month, 'year': year, 'user': target, 'order': order_by})
-    print cur.mogrify(
-        "SELECT time_entries.id, time_entries.project_id, projects.name, time_entries.issue_id, time_entries.hours, "
-        "time_entries.comments, enumerations.name, time_entries.spent_on, custom_values.value, enumerations.id, "
-        "projects.id FROM time_entries INNER JOIN custom_values ON custom_values.customized_id = time_entries.id "
-        "INNER JOIN users ON users.id = time_entries.user_id "
-        "INNER JOIN projects ON projects.id = time_entries.project_id "
-        "INNER JOIN enumerations ON enumerations.id = time_entries.activity_id WHERE time_entries.tyear = %(year)s "
-        "AND time_entries.tmonth = %(month)s AND users.login = '%(user)s' ORDER BY %(order)s;" % {
-            'month': month, 'year': year, 'user': target, 'order': order_by})
 
     entries = cur.fetchall()
     print entries
@@ -182,10 +173,13 @@ def get_entries_home(request):
 
     # get a list of users who have time logged for this month/year
     cur.execute(
-        "SELECT firstname, lastname, login FROM users "
-        "ORDER BY login DESC, firstname, lastname;" % {
-            'month': month, 'year': year})
+        "select users.firstname, users.lastname, users.login, max(CASE WHEN " \
+                "(time_entries.tmonth >= '%(month)s' and time_entries.tyear <= '%(year)s') THEN 2 ELSE 1 end) AS t " \
+                "from users inner join time_entries on time_entries.user_id = users.id " \
+                "GROUP BY users.login, users.firstname, users.lastname ORDER BY t desc, users.firstname;" % {
+                    'month': month, 'year': year})
     users = cur.fetchall()
+    print users
     # loop through the users, constructing a dictionary
     user_list = []
     for u in users:
