@@ -358,11 +358,13 @@ def generate_internal_report(request):
                 "inner join custom_values ON custom_values.customized_id = time_entries.id "
                 "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
                 "inner join projects on projects.id = time_entries.project_id "
+                "inner join charge_rates on custom_values.value = charge_rates.category "
                 "inner join enumerations on enumerations.id = time_entries.activity_id "
                 "where (time_entries.project_id = %(project_id)s or time_entries.project_id = any(childlist(%(project_id)s))) "
                 "and lower(custom_fields.name) = lower('Log as') "
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
                 "and lower(enumerations.name) not like '%%non%%billable' "
+                "and charge_rates.center = 1"
                 "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
             times = cur.fetchall()
@@ -565,24 +567,22 @@ def generate_csr_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                'SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, '
-                'users.login, time_entries.spent_on '
-                'FROM time_entries '
-                'INNER JOIN users ON time_entries.user_id=users.id '
-                'INNER JOIN projects ON time_entries.project_id=projects.id '
-                'INNER JOIN enumerations ON enumerations.id=time_entries.activity_id '
-                'INNER JOIN custom_values ON custom_values.customized_id = time_entries.id'
-                ' WHERE (time_entries.project_id = ANY(childlist(%(project_id)s)) '
-                'OR time_entries.project_id = %(project_id)s)'
-                ' AND enumerations.name <> \'  Support (non-billable) \' '
-                'AND custom_values.value NOT LIKE \'%%(external)%%\' '
-                'AND tmonth = %(month)s AND tyear = %(year)s '
-                'AND time_entries.project_id IN %(list)s '
-                'AND custom_values.value LIKE \'%%Statistical%%\''
-                'GROUP BY users.lastname, users.firstname, users.login, custom_values.value, time_entries.spent_on '
-                'ORDER BY users.lastname, users.firstname;' % {
-                    'project_id': project, 'month': request.GET['month'], 'year': request.GET['year'],
-                    'list': required_list})
+                "select sum(hours), users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
+                "from time_entries "
+                "inner join users on users.id = time_entries.user_id "
+                "inner join custom_values ON custom_values.customized_id = time_entries.id "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "inner join projects on projects.id = time_entries.project_id "
+                "inner join charge_rates on custom_values.value = charge_rates.category "
+                "inner join enumerations on enumerations.id = time_entries.activity_id "
+                "where (time_entries.project_id = %(project_id)s or time_entries.project_id = any(childlist(%(project_id)s))) "
+                "and lower(custom_fields.name) = lower('Log as') "
+                "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
+                "and lower(enumerations.name) not like '%%non%%billable' "
+                "and charge_rates.center = 2"
+                "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
+                "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'],
+                                              'year': request.GET['year']})
             times = cur.fetchall()
 
             # format of the "times":
