@@ -352,7 +352,7 @@ def generate_internal_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                "select sum(hours), users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
+                "select hours, users.firstname, users.lastname, custom_values.value, users.login, time_entries.spent_on "
                 "from time_entries "
                 "inner join users on users.id = time_entries.user_id "
                 "inner join custom_values ON custom_values.customized_id = time_entries.id "
@@ -365,9 +365,12 @@ def generate_internal_report(request):
                 "and time_entries.tmonth = %(month)s and time_entries.tyear = %(year)s "
                 "and lower(enumerations.name) not like '%%non%%billable' "
                 "and charge_rates.center = 1"
-                "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
+                " group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on, time_entries.hours "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
+
             times = cur.fetchall()
+
+            print "TIMES:", len(times)
             # format of the "times":
             # times[0] = summation of hours
             # times[1] = last name
@@ -382,6 +385,7 @@ def generate_internal_report(request):
             # loop through all time records, creating a new row of information to add
             records = []
             for record in times:
+                print "RECORD:", record
                 # grab the rate for the date we're working with, along with the cores display name
                 internal = 'TRUE'
                 if 'external' in record[3]:
@@ -583,6 +587,7 @@ def generate_csr_report(request):
                 "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'],
                                               'year': request.GET['year']})
+
             times = cur.fetchall()
 
             # format of the "times":
@@ -784,7 +789,7 @@ def generate_external_report(request):
 
             # get the total time spent for each individual, and for each billing type
             cur.execute(
-                'SELECT SUM(hours), users.lastname, users.firstname, custom_values.value, users.login, '
+                'SELECT hours, users.lastname, users.firstname, custom_values.value, users.login, '
                 'time_entries.spent_on FROM time_entries INNER JOIN users ON time_entries.user_id=users.id '
                 'INNER JOIN projects ON time_entries.project_id=projects.id INNER JOIN enumerations '
                 'ON enumerations.id=time_entries.activity_id INNER JOIN custom_values '
