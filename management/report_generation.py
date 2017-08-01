@@ -299,7 +299,6 @@ def generate_internal_report(request):
                         " where custom_values.customized_type = 'TimeEntry'"
                         " and time_entries.project_id = %(project_id)s;" % {'project_id': project})
             hours = cur.fetchone()
-            print "HOURS for", project, ":", hours
             if len(hours) == 1 and hours[0] is None:
                 continue
 
@@ -311,7 +310,7 @@ def generate_internal_report(request):
                 "SELECT value FROM custom_values "
                 "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
                 "WHERE customized_id = %(project)s and customized_type='Project' AND custom_fields.name = 'FOPAL';" % {
-                    'project': project[0]})
+                    'project': project})
             fopal = cur.fetchall()
             if len(fopal) >= 1:
                 fopal = fopal[0][0]
@@ -324,7 +323,7 @@ def generate_internal_report(request):
                 "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
                 "WHERE customized_id = %(project)s and customized_type='Project' "
                 "AND lower(custom_fields.name) = lower('Financial PI');" % {
-                    'project': project[0]})
+                    'project': project})
             fpi = cur.fetchall()
             if len(fpi) >= 1:
                 try:
@@ -342,7 +341,7 @@ def generate_internal_report(request):
                 "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
                 "WHERE customized_id = %(project)s and customized_type='Project' "
                 "AND lower(custom_fields.name) = lower('PI');" % {
-                    'project': project[0]})
+                    'project': project})
             pi = cur.fetchall()
             if len(pi) >= 1:
                 pi = pi[0][0]
@@ -365,7 +364,6 @@ def generate_internal_report(request):
                 "group by users.firstname, users.lastname, users.login, custom_values.value, time_entries.spent_on "
                 "order by users.lastname;" % {'project_id': project, 'month': request.GET['month'], 'year': request.GET['year']})
             times = cur.fetchall()
-            print times
             # format of the "times":
             # times[0] = summation of hours
             # times[1] = last name
@@ -390,8 +388,6 @@ def generate_internal_report(request):
                 try:
                     cur.execute(query)
                     rate_info = cur.fetchone()
-                    print "Record:", record,
-                    print "Rate:", rate_info
                     if rate_info is None:
                         # then assume rate is 0
                         rate = 0
