@@ -332,6 +332,7 @@ def generate_internal_report(request):
                     fpi = fpi[0][0]
                     sfpi = fpi.split(' ')
                     fpi = sfpi[1] + ', ' + sfpi[0]
+                    print fpi
                 except:
                     fpi = ''
             else:
@@ -417,8 +418,8 @@ def generate_internal_report(request):
                 new_record['unit'] = 'Hour'  # Unit (hours)
                 new_record['rate'] = str(rate)  # Hourly rate
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
-                new_record['secondary_comments'] = '"' + record[3] + ' ' + record[
-                    2] + '"'  # Secondary comments (always empty?)
+                new_record['secondary_comments'] = '"' + record[2] + ' ' + record[
+                    3] + '"'  # Secondary comments (always empty?)
                 new_record['fpi'] = fpi  # Financially responsible PI (formatted as: "Last,First MI")
                 new_record['pi'] = '"' + (pi) + '"'  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
