@@ -97,6 +97,18 @@ def check_fopal(fopal=''):
         return False
 
 
+def get_billing_date(month, year):
+    print "month:", month
+    print "current:", datetime.datetime.now().month
+    if str(datetime.datetime.now().month) != str(month):
+        day = calendar.monthrange(int(year), int(month))[1]
+        return str(day) + '-' + calendar.month_abbr[int(month)].upper() + '-' + str(year)[2:]
+    else:
+        return str(datetime.datetime.now().today().day) + '-' + \
+               calendar.month_abbr[int(datetime.datetime.now().today().month)].upper() + '-' + \
+               str(datetime.datetime.now().today().year)[2:]
+
+
 def report_generator_home(request):
     # connect to our database
     cur = connection.cursor()
@@ -410,9 +422,10 @@ def generate_internal_report(request):
                 new_record['name'] = project_name  # Primary Comments
                 new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
                 # new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
-                new_record['trans'] = (
-                    str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction Date
+                # new_record['trans'] = (
+                #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+                #                                                                                 2:])  # Transaction Date
+                new_record['trans'] = get_billing_date(request.GET['month'], request.GET['year'])
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
                 new_record['hours'] = record[1]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
@@ -623,9 +636,10 @@ def generate_csr_report(request):
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
                 new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
-                new_record['trans'] = (
-                    str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction Date
+                # new_record['trans'] = (
+                #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+                #                                                                                 2:])  # Transaction Date
+                new_record['trans'] = get_billing_date(request.GET['month'], request.GET['year'])
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
                 new_record['hours'] = record[1]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
@@ -837,9 +851,10 @@ def generate_external_report(request):
                 new_record['name'] = project_name  # Primary Comments
                 new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
                 # new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
-                new_record['trans'] = (
-                    str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction Date
+                # new_record['trans'] = (
+                #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+                #                                                                                 2:])  # Transaction Date
+                new_record['trans'] = get_billing_date(request.GET['month'], request.GET['year'])
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
                 new_record['hours'] = record[0]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
