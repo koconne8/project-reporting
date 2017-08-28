@@ -408,9 +408,10 @@ def generate_internal_report(request):
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
                 new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
-                new_record['trans'] = (
-                    str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction Date
+                new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
+                # new_record['trans'] = (
+                #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+                #                                                                                 2:])  # Transaction Date
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
                 new_record['hours'] = record[1]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
@@ -418,8 +419,8 @@ def generate_internal_report(request):
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
                 new_record['secondary_comments'] = '"' + record[3] + ' ' + record[
                     2] + '"'  # Secondary comments (always empty?)
-                new_record['fpi'] = '"' + fpi + '"'  # Financially responsible PI (formatted as: "Last,First MI")
-                new_record['pi'] = (pi)  # Purchasers Last Name (PI we're working with)
+                new_record['fpi'] = fpi  # Financially responsible PI (formatted as: "Last,First MI")
+                new_record['pi'] = '"' + (pi) + '"'  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
                 new_record['login'] = '"' + record[5] + '"'  # Line Item Assistant (netID of the user)
@@ -631,8 +632,8 @@ def generate_csr_report(request):
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
                 new_record['secondary_comments'] = '"' + record[3] + ' ' + record[
                     2] + '"'  # Secondary comments (always empty?)
-                new_record['fpi'] = '"' + fpi + '"'  # Financially responsible PI (formatted as: "Last,First MI")
-                new_record['pi'] = (pi)  # Purchasers Last Name (PI we're working with)
+                new_record['fpi'] = fpi  # Financially responsible PI (formatted as: "Last,First MI")
+                new_record['pi'] = '"' + (pi) + '"'  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
                 new_record['login'] = '"' + record[5] + '"'  # Line Item Assistant (netID of the user)
@@ -834,17 +835,18 @@ def generate_external_report(request):
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
                 new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
-                new_record['trans'] = (
-                    str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
-                                                                                                2:])  # Transaction Date
+                new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
+                # new_record['trans'] = (
+                #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
+                #                                                                                 2:])  # Transaction Date
                 new_record['service'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Description
                 new_record['hours'] = record[0]  # Quantity (Hours)
                 new_record['unit'] = 'Hour'  # Unit (hours)
                 new_record['rate'] = str(rate)  # Hourly rate
                 new_record['category'] = cores_display  # (cost_lib.getCORESName(record[3]))		# Service Category
                 new_record['secondary_comments'] = '""'  # Secondary comments (always empty?)
-                new_record['fpi'] = '"' + fpi + '"'  # Financially responsible PI (formatted as: "Last,First MI")
-                new_record['pi'] = (pi)  # Purchasers Last Name (PI we're working with)
+                new_record['fpi'] = fpi  # Financially responsible PI (formatted as: "Last,First MI")
+                new_record['pi'] = '"' + (pi) + '"'  # Purchasers Last Name (PI we're working with)
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
                 new_record['login'] = '"' + record[4] + '"'  # Line Item Assistant (netID of the user)
