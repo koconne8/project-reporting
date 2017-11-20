@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django_extensions',
     #'skillsmatrix.apps.SkillsmatrixConfig',
     # used on prod for CAS authentication
-    'mama_cas',
+    # 'mama_cas',
 ]
 
 MIDDLEWARE_CLASSES = [

@@ -8,6 +8,6 @@ DATABASES = {
         'USER': 'redmine',
         'PASSWORD': 'redminepass',
         'HOST': 'localhost',
-        'PORT': '5432'
+        'PORT': '5444'
     }
 }
