@@ -25,6 +25,6 @@ CAS_AUTO_CREATE_USERS = False
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'cas.backends.CASBackend',
+    #'cas.backends.CASBackend',
 )
 
