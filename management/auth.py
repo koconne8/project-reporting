@@ -1,7 +1,7 @@
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, HttpResponseRedirect
 from pr.settings.base import LOGIN_URL
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 
 def login_page(request):
