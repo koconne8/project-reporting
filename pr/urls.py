@@ -97,8 +97,8 @@ urlpatterns = [
     url(r'^weekly_report/$', weekly_report_form_url, name='weekly_report'),
 
     # Used if on production for CAS authentication
-    url(r'^accounts/login/$', 'cas.views.login', name='login'),
-    url(r'^accounts/logout/$', 'cas.views.logout', name='logout'),
+    # url(r'^accounts/login/$', 'cas.views.login', name='login'),
+    # url(r'^accounts/logout/$', 'cas.views.logout', name='logout'),
 
     # OR you can use these login pages:
     url(r'^accounts/login/$', login_page, name='login'),
