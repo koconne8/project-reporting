@@ -12,7 +12,7 @@ DATABASES = {
         'NAME': 'redmine',
         'USER': 'redmine',
         'PASSWORD': 'redminepass',
-        'HOST': '129.74.246.37',
+        'HOST': 'localhost',
         'PORT': '5432'
     }
 }
