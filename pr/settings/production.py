@@ -14,6 +14,14 @@ DATABASES = {
         'PASSWORD': 'redminepass',
         'HOST': 'localhost',
         'PORT': '5432'
+    },
+    'staff': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'redmine',
+        'USER': 'crc_staff',
+        'PASSWORD': 'resolutions are the same',
+        'HOST': 'localhost',
+        'PORT': '5432'
     }
 }
 
