@@ -1,5 +1,5 @@
 from django.shortcuts import HttpResponse, render
-from django.db import connection
+from django.db import connection, connections
 import datetime
 import json
 from django.contrib.auth.decorators import login_required
@@ -17,6 +17,7 @@ def update_entry_data(request):
 
     # connect to the database
     cur = connection.cursor()
+    cur_man = connections['staff'].cursor()
 
     # let's do some security checks - run through each entry
     # and make sure they are the owner of each one...unless they're a manager!
@@ -46,10 +47,14 @@ def update_entry_data(request):
                     'week': entry_date.isocalendar()[1]}
 
     # execute the query
-    cur.execute(query)
+    if request.user.is_staff:
+        cur_man.execute(query)
+    else:
+        cur.execute(query)
 
     # if we made it out ok, let's commit it!
     connection.commit()
+    connections['staff'].commit()
 
     return HttpResponse("200")
 
@@ -61,6 +66,7 @@ def copy_entry(request):
 
     # connect to the database
     cur = connection.cursor()
+    cur_man = connections['staff'].cursor()
 
     # let's do some security checks - run through each entry
     # and make sure they are the owner of each one...unless they're a manager!
@@ -99,7 +105,10 @@ def copy_entry(request):
                                'year': edate[0], 'month': edate[1], 'week': entry_date.isocalendar()[1],
                                'now': datetime.datetime.now().isoformat()}
 
-    cur.execute(query)
+    if request.user.is_staff:
+        cur_man.execute(query)
+    else:
+        cur.execute(query)
     new_id = cur.fetchone()[0]
 
     # also copy the custom_values
@@ -140,5 +149,6 @@ def copy_entry(request):
     new_entry['project_id'] = entry[10]
 
     connection.commit()
+    connections['staff'].commit()
 
     return HttpResponse(json.dumps(new_entry))

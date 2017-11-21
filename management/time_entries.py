@@ -1,5 +1,5 @@
 from django.shortcuts import HttpResponse, render
-from django.db import connection
+from django.db import connection, connections
 import datetime
 import calendar
 import json
@@ -98,6 +98,8 @@ def update_entries(request):
 
     # connect to the database
     cur = connection.cursor()
+    # manager's cursor
+    cur_man = connections['staff'].cursor()
 
     # let's do some security checks - run through each entry
     # and make sure they are the owner of each one...unless they're a manager!
@@ -170,7 +172,10 @@ def update_entries(request):
                         'week': entry_date.isocalendar()[1]}
 
         # execute the query
-        cur.execute(query)
+        if request.user.is_staff:
+            cur_man.execute(query)
+        else:
+            cur.execute(query)
 
         # grab the id, if we need it
         timeid = cur.fetchone()[0]
@@ -183,7 +188,11 @@ def update_entries(request):
             query = "UPDATE custom_values SET value = '%(value)s' WHERE customized_id = %(id)s " \
                     "AND custom_field_id = 9 AND customized_type = 'TimeEntry';" % {
                         'id': entry['id'], 'value': entry['logas']}
-        cur.execute(query)
+
+        if request.user.is_staff:
+            cur_man.execute(query)
+        else:
+            cur.execute(query)
 
         # if the user performing this action is NOT the target, let's record this change...
         if target != user:
@@ -191,10 +200,14 @@ def update_entries(request):
                     "VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
                         'user': user, 'old': str(old_record).replace('\'', ''), 'new': str(entry).replace('\'', ''),
                         'time': str(datetime.datetime.now()), 'target': target}
-            cur.execute(query)
+            if request.user.is_staff:
+                cur_man.execute(query)
+            else:
+                cur.execute(query)
 
     # if we made it out ok, let's commit it!
     connection.commit()
+    connections['staff'].commit()
 
     return HttpResponse("200")
 
@@ -213,6 +226,7 @@ def delete_entry(request):
 
     # connect to the database
     cur = connection.cursor()
+    cur_man = connections['staff'].cursor()
 
     # let's do some security checks - run through each entry
     # and make sure they are the owner of each one...unless they're a manager!
@@ -234,10 +248,14 @@ def delete_entry(request):
     old_entry = cur.fetchone()
 
     # now simply delete it!
-    cur.execute("DELETE FROM time_entries WHERE id = %(id)s;" % {'id': entry})
-
-    # also delete any record in "custom_values"
-    cur.execute("DELETE FROM custom_values WHERE customized_id = %(id)s;" % {'id': entry})
+    if request.user.is_staff:
+        cur_man.execute("DELETE FROM time_entries WHERE id = %(id)s;" % {'id': entry})
+        # also delete any record in "custom_values"
+        cur_man.execute("DELETE FROM custom_values WHERE customized_id = %(id)s;" % {'id': entry})
+    else:
+        cur.execute("DELETE FROM time_entries WHERE id = %(id)s;" % {'id': entry})
+        # also delete any record in "custom_values"
+        cur.execute("DELETE FROM custom_values WHERE customized_id = %(id)s;" % {'id': entry})
 
     # if the user performing this action is NOT the target, let's record this removal...
     if target != user:
@@ -245,9 +263,13 @@ def delete_entry(request):
                 "VALUES ('%(user)s', '%(old)s', '%(new)s', '%(time)s', '%(target)s');" % {
                     'user': user, 'old': str(old_entry).replace('\'', ''), 'new': 'RECORD DELETED',
                     'time': str(datetime.datetime.now()), 'target': target}
-        cur.execute(query)
+        if request.user.is_staff:
+            cur_man.execute(query)
+        else:
+            cur.execute(query)
 
     # commit!
     connection.commit()
+    connections['staff'].commit()
 
     return HttpResponse("200")
