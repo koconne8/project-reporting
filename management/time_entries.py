@@ -174,11 +174,13 @@ def update_entries(request):
         # execute the query
         if request.user.is_staff:
             cur_man.execute(query)
+            # grab the id, if we need it
+            timeid = cur_man.fetchone()[0]
         else:
             cur.execute(query)
+            # grab the id, if we need it
+            timeid = cur.fetchone()[0]
 
-        # grab the id, if we need it
-        timeid = cur.fetchone()[0]
 
         if entry['id'] == 'new_entry':
             query = "INSERT INTO custom_values (customized_id, custom_field_id, value, customized_type) " \
