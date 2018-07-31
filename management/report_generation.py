@@ -420,7 +420,7 @@ def generate_internal_report(request):
                         "following into the email: <br> " + query)
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
-                new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
+                new_record['fopal'] = '"'+clean_fopal(fopal)+'"'  # Customer Account Number
                 # new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
                 # new_record['trans'] = (
                 #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
@@ -635,7 +635,7 @@ def generate_csr_report(request):
                         "paste the following into the email: <br> " + query)
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
-                new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
+                new_record['fopal'] = '"'+clean_fopal(fopal)+'"'  # Customer Account Number
                 # new_record['trans'] = (
                 #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
                 #                                                                                 2:])  # Transaction Date
@@ -849,7 +849,7 @@ def generate_external_report(request):
                         "following into the email: <br> " + query)
                 new_record = {}
                 new_record['name'] = project_name  # Primary Comments
-                new_record['fopal'] = clean_fopal(fopal)  # Customer Account Number
+                new_record['fopal'] = '"'+clean_fopal(fopal)+'"'  # Customer Account Number
                 # new_record['trans'] = str(int(request.GET['month']))+'/'+str(day)+'/'+request.GET['year']
                 # new_record['trans'] = (
                 #     str(day) + '-' + calendar.month_abbr[int(request.GET['month'])].upper() + '-' + request.GET['year'][
