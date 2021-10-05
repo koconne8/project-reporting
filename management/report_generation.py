@@ -119,7 +119,7 @@ def report_generator_home(request):
         "FROM projects "
         "INNER JOIN custom_values ON customized_id = projects.id "
         "INNER JOIN custom_fields ON custom_fields.id = custom_values.custom_field_id "
-        "WHERE custom_fields.name = 'CORES Ready' "
+        "WHERE custom_fields.name = 'iLabs Ready' "
         "AND custom_values.value = '1';")
 
     dbprojects = cur.fetchall()
