@@ -251,9 +251,7 @@ def report_generator_home(request):
 
 def generate_internal_report(request):
     # Top line - column headers
-    header = ['Primary Comments', 'Customer Account Number', 'Transaction Date', 'Service Description', 'Quantity',
-              'Unit', 'Price', 'Service Category', 'Secondary Comments', 'PI\'s Name', 'Purchaser\'s Last Name',
-              'Short Contributing Center Name', 'Resource Name', 'Line Item Assistant', 'Line Item Comments']
+    header = ['service_id', 'note','service_quantity','price','purchased_on','service_request_id', 'owner_email','pi_email_or_group_id','payment_number','activity_code']
 
     project_list = request.GET['ProjectList'].replace('"', '').split(',')
 
@@ -282,22 +280,17 @@ def generate_internal_report(request):
     print len(required_list.split(','))
 
     # NOTE: Here is an explination of what should be gathered:
-    #  Primary Comments: 		Project Name
-    #  Customer Account Number: 	FOPAL
-    #  Transaction Date:		Date
-    #  Service Description:		Computational Scientist Services, GIS/Visualization Services, HPC Services,
-    #                           Programming, Graduate Course, HS/Community, Other, Undergrad Course
-    #  Quantity:			Number of hours/month
-    #  Unit:			Hour
-    #  Price:			Hourly Rate
-    #  Service Category:		CS, GIS/Vis, HPC, Outreach, Programming, etc.
-    #  Secondary Comments:		None
-    #  PI's Name:			Financially Responsible PI
-    #  Purchaser's Last Name:	PI on the project
-    #  Short Contrib...:		None
-    #  Resource Name:		None
-    #  Line Item Assistant:		NetID of user
-    #  Line Item Comments:		None
+    #  service_id:  hard coded value for CRC
+    #  note: Project Name
+    #  service_quantity:  Number of hours/month
+    #  price:  leave blank on all entries
+    #  purchased_on:  Date
+    #  service_request_id:  leave blank for all entries
+    #  owner_email: leave blank for all entries
+    #  pi_email_or_group_id:  Redmine field PI email for the project
+    #  payment_number:  FOPAL
+    #  activity_code:  If the Payment number included an Activity code list it here
+   
 
     print len(project_list[0])
 
@@ -330,6 +323,18 @@ def generate_internal_report(request):
                 fopal = fopal[0][0]
             else:
                 fopal = ''
+
+            # get the Project PI's email
+            cur.execute(
+                "SELECT value FROM custom_values "
+                "inner join custom_fields on custom_fields.id = custom_values.custom_field_id "
+                "WHERE customized_id = %(project)s and customized_type='Project' AND custom_fields.name = 'PI Email Address';" % {
+                    'project': project})
+            pi_email = cur.fetchall()
+            if len(pi_email) >= 1:
+                pi_email = pi_email[0][0]
+            else:
+                pi_email = ''
 
             # get the financially responsible PI (if any)
             cur.execute(
@@ -435,6 +440,7 @@ def generate_internal_report(request):
                     3] + '"'  # Secondary comments (always empty?)
                 new_record['fpi'] = fpi  # Financially responsible PI (formatted as: "Last,First MI")
                 new_record['pi'] = '"' + (pi) + '"'  # Purchasers Last Name (PI we're working with)
+                new_record['pi_email'] = '"' + (pi_email) + '"'  # PI Email Address
                 new_record['center'] = '""'  # Short Contributing Center Name
                 new_record['resource'] = '""'  # Resource Name
                 new_record['login'] = '"' + record[5] + '"'  # Line Item Assistant (netID of the user)
@@ -454,21 +460,27 @@ def generate_internal_report(request):
             # now loop through the collective rows, and write them
             for record in records:
                 new_record = []
+                new_record.append('"474287"')
                 new_record.append(record['name'])
-                new_record.append(record['fopal'])
-                new_record.append(record['trans'])
-                new_record.append(record['service'])
                 new_record.append(record['hours'])
-                new_record.append(record['unit'])
-                new_record.append(record['rate'])
-                new_record.append(record['category'])
-                new_record.append(record['secondary_comments'])
-                new_record.append(record['pi'])
-                new_record.append(record['fpi'])
-                new_record.append(record['center'])
-                new_record.append(record['resource'])
-                new_record.append(record['login'])
-                new_record.append(record['comment'])
+                new_record.append('""')
+                new_record.append(record['trans'])
+                new_record.append('""')
+                new_record.append('""')
+                new_record.append(record['pi_email'])
+                new_record.append(record['fopal'])
+                new_record.append('""')
+                # new_record.append(record['service'])
+                # new_record.append(record['unit'])
+                # new_record.append(record['rate'])
+                # new_record.append(record['category'])
+                # new_record.append(record['secondary_comments'])
+                # new_record.append(record['pi'])
+                # new_record.append(record['fpi'])
+                # new_record.append(record['center'])
+                # new_record.append(record['resource'])
+                # new_record.append(record['login'])
+                # new_record.append(record['comment'])
                 # write row!
                 writer.writerow(new_record)
 
