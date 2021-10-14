@@ -102,7 +102,8 @@ def get_billing_date(month, year):
     print "current:", datetime.datetime.now().month
     if str(datetime.datetime.now().month) != str(month):
         day = calendar.monthrange(int(year), int(month))[1]
-        return str(day) + '-' + calendar.month_abbr[int(month)].upper() + '-' + str(year)[2:]
+        #Going to return yyyy-mm-dd
+        return f"{str(year)}-{month}-{str(day)}"
     else:
         return str(datetime.datetime.now().today().day) + '-' + \
                calendar.month_abbr[int(datetime.datetime.now().today().month)].upper() + '-' + \
